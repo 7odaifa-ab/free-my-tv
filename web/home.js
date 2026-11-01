@@ -73,6 +73,10 @@
   // mirror what isn't placed here.
   var rtl = false;
 
+  // A fork's own layer (web/custom.js) when the build has one: home.js hands it what it needs (customApi) and asks it
+  // first in the few places marked "custom". Without it, or when it declines (it returns null), nothing changes.
+  var custom = null;
+
   function direction() {
     rtl = I18N.rtl;
     setClass(body, 'rtl', rtl);
@@ -357,6 +361,7 @@
   function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.LANG || st.zone === Z.CITY || st.zone === Z.KEY || st.zone === Z.ABOUT; }
 
   function updateFocus() {
+    if (custom) custom.focus();
     var i, list;
     list = $('tabs').children;
     for (i = 0; i < list.length; i++) {
@@ -427,6 +432,7 @@
     }
     var buttons = $('buttons');
     buttons.innerHTML = '';
+    if (custom && custom.buttons(buttons)) return;
     var defs = [['live_tv', tr('light|Live TV')], ['hdmi', tr('HDMI Inputs')], ['settings', tr('light|Settings')]];
     for (var b = 0; b < 3; b++) {
       var r = el('button', 'round' + (b === 2 ? ' last' : ''), buttons);
@@ -535,6 +541,7 @@
   }
 
   function renderClock() {
+    if (custom && custom.clock($('clock'))) return;
     var d = new Date(), c = $('clock');
     c.firstChild.textContent = formatDate('format|h:mm', d.getTime());
     c.lastChild.textContent = formatDate('format|EEEE, MMMM d', d.getTime());
@@ -620,6 +627,8 @@
     var d = $('drawer');
     d.innerHTML = '';
     drawerItems = [];
+    var mine = custom && custom.drawer(d);
+    if (mine) { drawerItems = mine.items; drawerInputs = mine.inputs; updateFocus(); return; }
     for (var i = 0; i < inputs.length; i++) {
       var x = inputs[i];
       drawerItems.push({label: x.label || tr('Live TV'), symbol: x.symbol, off: !x.connected, run: launcher(x.id, x.label)});
@@ -650,6 +659,7 @@
   }
 
   function renderPanels() {
+    if (custom && custom.panels()) return;
     var d = $('drawer');
     var old = d.querySelectorAll('.panel');
     for (var o = 0; o < old.length; o++) d.removeChild(old[o]);
@@ -1313,6 +1323,7 @@
   }
 
   function activate() {
+    if (custom && custom.activate()) return;
     switch (st.zone) {
       case Z.TOP:
         if (st.top < 3) return;
@@ -1371,6 +1382,7 @@
     var tiles = $('tiles').children, cardNodes = $('cards').children;
     // Mirrored, the screen's left is the way forward: ← goes to the next one. (Settings' values keep their arrows.)
     if (rtl && (st.zone === Z.SHELF || st.zone === Z.CARDS || st.zone === Z.TOP || st.zone === Z.DRAWER || st.zone === Z.APPS)) dx = -dx;
+    if (custom && custom.move(dx, dy)) { updateFocus(); return; }
     switch (st.zone) {
       case Z.SHELF:
         if (dx) st.shelf = Math.max(0, Math.min(shelf.length - 1, st.shelf + dx));
@@ -1439,6 +1451,7 @@
     if (st.zone === Z.KEY) { if (keyAsking) askRemoveKey(false); else closeKey(); return; }
     if (st.zone === Z.ABOUT) { closeAbout(); return; }
     if (sheetOpen()) { closeSheets(); return; }
+    if (custom && custom.back()) return;
     if (st.zone === Z.DRAWER) { closeDrawer(); return; }
     if (st.zone !== Z.SHELF && shelf.length) { st.zone = Z.SHELF; updateFocus(); return; }
     TV.back();
@@ -1486,6 +1499,7 @@
   function checkNight() {
     var night = Data.isNight(Date.now());
     setClass(body, 'night', night);
+    if (custom) custom.night(night);
     if (night === lastNight) return;
     lastNight = night;
     document.documentElement.style.background = night ? '#0B0B0D' : '';
@@ -1522,6 +1536,7 @@
   }
 
   function showSaver() {
+    if (custom && custom.saver($('saver'))) { saverOn = true; setClass($('saver'), 'on', true); return; }
     var photos = saverPhotos();
     saverOn = true;
     saverPick = null;
@@ -1568,6 +1583,7 @@
   }
 
   function hideSaver() {
+    if (custom) custom.hideSaver();
     saverOn = false;
     clearTimeout(saverTimer);
     setClass($('saver'), 'on', false);
@@ -1734,6 +1750,7 @@
 
   I18N.set(Prefs.language());
   direction();
+  custom = window.FreeMyTVCustom ? window.FreeMyTVCustom(customApi()) : null;
   checkNight();   // now, from the last forecast: not after the TV lists its apps, with the day look until then
   // LG's screensaver waits only when ours will show: not under a sheet (ours waits there), and not without photos.
   TV.holdScreenSaver(function () { return !sheetOpen() && (saverMode() === 'clock' || saverPhotos().length > 0); });
@@ -1753,9 +1770,20 @@
     if (!saverOn && !ambientOn && !sheetOpen() && Date.now() - idleAt > SAVER_AFTER) {
       if (saverMode() === 'clock') showAmbient(); else showSaver();
     }
-    if (saverOn) tickSaverClock($('saver').querySelector('.clock'));
+    if (saverOn && !(custom && custom.tickSaver())) tickSaverClock($('saver').querySelector('.clock'));
     if (ambientOn) tickAmbient();
   }, 30000);
+
+  /** What web/custom.js is handed: home.js's helpers and the state it reads or moves. */
+  function customApi() {
+    return {
+      $: $, el: el, sym: sym, setClass: setClass, hasClass: hasClass, startAt: startAt, endAt: endAt, hover: hover,
+      nearest: nearest, centerX: centerX, launcher: launcher, tvSettings: tvSettings, openSettings: openSettings,
+      showSaver: showSaver, updateFocus: updateFocus, sheetOpen: sheetOpen, saverPhotos: saverPhotos, pickTarget: pickTarget,
+      setSaverPick: function (p) { saverPick = p; }, rtl: function () { return rtl; }, st: st, Z: Z,
+      inputs: function () { return inputs; }, apps: function () { return apps; }
+    };
+  }
 
   // For the browser preview and tests.
   window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast,

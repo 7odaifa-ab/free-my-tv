@@ -1,0 +1,234 @@
+/*
+ * This fork's own styles (with web/custom.js): the office layout in UrTV's look, every rule under body.office, so the
+ * home screen is main's wherever home_layout isn't office, and main's home.css merges without touching these.
+ */
+.office #sky .photo { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-size: cover; background-position: center 30%; opacity: 1; -webkit-transition: opacity 1.2s; transition: opacity 1.2s; }
+.office .toggle.on { background: #57938A; }
+.office .box .row.focus { background: rgba(87, 147, 138, 0.42); box-shadow: inset 0 0 0 2px rgba(87, 147, 138, 0.9); }
+.office #settings .box, .office #shelfedit .box, .office #langpick .box, .office #citypick .box, .office #keypick .box, .office #about .box {
+  background: -webkit-linear-gradient(top, rgba(16, 48, 82, 0.97), rgba(9, 28, 50, 0.98));
+  background: linear-gradient(rgba(16, 48, 82, 0.97), rgba(9, 28, 50, 0.98));
+}
+
+/* Thmanyah, when the build has the person's own copy (tools/custom_build.py): Sans for the text, Serif Display for the
+   big numbers and titles. Two weights each, so 500 reads as regular and 600 as bold. Without it, Inter. */
+@font-face { font-family: 'Thmanyah'; src: url('fonts/thmanyahsans-Regular.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Thmanyah'; src: url('fonts/thmanyahsans-Bold.woff2') format('woff2'); font-weight: 700; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('fonts/thmanyahserifdisplay-Regular.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('fonts/thmanyahserifdisplay-Bold.woff2') format('woff2'); font-weight: 700; }
+body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne', 'Segoe UI', Tahoma, Arial, sans-serif; }
+
+/* MARK: - Prayer times and the Hijri date (prayer.js) */
+
+/* MARK: - The person's brand: the display font on the big numbers and titles, and the logo, big and faded, in a corner */
+
+.office #title, .office #clock .time, .office #saver .clock .time, .office #weather .now .temp { font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; }
+.office #sky .brand {
+  position: absolute;
+  right: 70px;
+  bottom: 60px;
+  width: 780px;
+  height: 736px;
+  background-image: url('logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.28;
+  -webkit-transition: opacity 2s;
+  transition: opacity 2s;
+}
+.night.office #sky .brand { opacity: 0.2; }
+.rtl.office #sky .brand { right: auto; left: 70px; }   /* the corner away from the clock */
+
+/* MARK: - Screensaver: the brand's backdrop, the prayers, the night dimmer */
+
+.office #saver .dim { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #000; opacity: 0; pointer-events: none; -webkit-transition: opacity 6s linear; transition: opacity 6s linear; }
+
+/*
+ * MARK: - The dark look, after UrTV's screens: a Saudi landscape under a veil, warm sand text and gold accents (ص/م, the
+ * colon, the labels), the clock in Thmanyah Serif Display. Sizes and colors measured on UrTV's page at 1920 x 1080.
+ */
+
+.office #sky .photo .dark, .office #saver .photo .dark { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: #000; }
+
+.night.office #sky .veil { background-color: transparent; background-image: -webkit-linear-gradient(top, rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); background-image: linear-gradient(rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); }
+
+/* The buttons: pills with their names, at the end edge */
+.office #buttons { position: absolute; top: 56px; right: 72px; white-space: nowrap; }
+.rtl.office #buttons { right: auto; left: 72px; }
+.office .pill {
+  position: relative;
+  display: inline-block;
+  height: 62px;
+  padding: 0 26px;
+  margin: 0 6px;
+  border-radius: 31px;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 62px;
+  white-space: nowrap;
+  color: #0C233F;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 6px 20px rgba(0, 0, 0, 0.08);
+  -webkit-transition: -webkit-transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), background-color 0.17s, color 0.17s, box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), background-color 0.17s, color 0.17s, box-shadow 0.2s;
+}
+.office .pill .sym { width: 26px; height: 26px; vertical-align: -5px; margin-right: 12px; }
+.rtl.office .pill .sym { margin-right: 0; margin-left: 12px; }
+.office .pill.focus { background: #FFF; -webkit-transform: scale(1.07); transform: scale(1.07); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3); }
+.night.office .pill { color: #F6EFE0; background: rgba(8, 14, 22, 0.42); box-shadow: inset 0 0 0 1px rgba(246, 239, 224, 0.2); }
+.night.office .pill.focus { background: #FFF8EA; color: #14181E; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45); }
+
+/* The clock: a greeting, the time with ص/م and the colon in the accent, then the dates and the next prayer */
+.office #clock { left: 80px; top: 44px; font-size: 16px; font-weight: 400; letter-spacing: 0; line-height: normal; }
+.rtl.office #clock { left: auto; right: 80px; }
+.office #clock .greet { font-size: 30px; font-weight: 500; color: #8D7A59; }
+.office #clock .time { direction: ltr; unicode-bidi: bidi-override; margin-top: 4px; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 190px; font-weight: 700; line-height: 1; white-space: nowrap; color: #0C233F; }
+.rtl.office #clock .time { text-align: right; }
+.office #clock .time .sep { font-size: 0.5em; vertical-align: 0.3em; margin: 0 0.06em; color: #8D7A59; opacity: 0.9; }
+.office #clock .time .ap { font-size: 0.3em; font-weight: 500; margin: 0 0.2em; color: #8D7A59; }
+.office #clock .date { display: block; margin-top: 14px; font-size: 30px; font-weight: 400; color: #61553E; white-space: nowrap; }
+.office #clock .next { margin-top: 8px; font-size: 28px; font-weight: 500; color: #2F6F66; white-space: nowrap; }
+.office #clock .greet:empty, .office #clock .next:empty { display: none; }
+.night.office #clock .greet, .night.office #clock .time .sep, .night.office #clock .time .ap, .night.office #clock .next { color: #DCB86F; }
+.night.office #clock .time { color: #FFFDF6; text-shadow: 0 4px 60px rgba(0, 0, 0, 0.55); }
+.night.office #clock .date { color: #D8CDB6; }
+
+/* Today's prayers, under the buttons */
+
+/* The shelf: big tiles on light glass, the focused one raised with a white edge, its name over the glass */
+
+/* The drawer's glass in the dark look: navy, with a gold hairline; the next prayer lit in gold */
+.night.office .glass { background: rgba(6, 14, 24, 0.6); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.16), 0 10px 30px rgba(0, 0, 0, 0.3); }
+.night.office .panel .head, .night.office .row-title { color: #DCB86F; }
+
+/* MARK: - Screensaver, after UrTV's: dates and weather on top, the big clock, today's prayers, a line of three below */
+
+.office #saver { background: #06101C; }
+.office #saver .photo { background-position: center 26%; }
+@-webkit-keyframes settle { from { -webkit-transform: scale(1.055) translate(-0.55%, -0.4%); } to { -webkit-transform: scale(1.03); } }
+@keyframes settle { from { transform: scale(1.055) translate(-0.55%, -0.4%); } to { transform: scale(1.03); } }
+.office #saver .photo.settle { -webkit-animation: settle 60s ease-out both; animation: settle 60s ease-out both; }
+.office #saver .veil { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: -webkit-linear-gradient(top, rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); background-image: linear-gradient(rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); }
+.office #saver .veil::after { content: ''; position: absolute; left: 70px; bottom: 60px; width: 780px; height: 736px; background-image: url('logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.2; }
+.office #saver .stg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; color: #F6EFE0; -webkit-transition: -webkit-transform 3s ease; transition: transform 3s ease; }
+
+.office #saver .dates { position: absolute; top: 34px; width: 760px; }
+.office #saver .hijri { font-size: 36px; font-weight: 500; white-space: nowrap; }
+.office #saver .greg { margin-top: 8px; font-size: 21px; font-weight: 400; color: #C3B8A2; white-space: nowrap; }
+.office #saver .greg:empty { display: none; }
+.office #saver .rule { margin-top: 12px; width: 180px; height: 1px; background: -webkit-linear-gradient(left, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); background: linear-gradient(to right, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); }
+.rtl.office #saver .rule { background: -webkit-linear-gradient(right, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); background: linear-gradient(to left, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); }
+.office #saver .wx { position: absolute; top: 34px; width: 620px; text-align: right; }
+.rtl.office #saver .wx { text-align: left; }
+.office #saver .wx .big { font-size: 36px; font-weight: 500; white-space: nowrap; }
+.office #saver .wx .sub { margin-top: 8px; font-size: 21px; color: #C3B8A2; white-space: nowrap; }
+
+.office #saver .sclock { position: absolute; top: 300px; }
+.office #saver .digits { direction: ltr; unicode-bidi: bidi-override; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 300px; font-weight: 700; line-height: 1; white-space: nowrap; color: #FFFDF6; text-shadow: 0 4px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 236, 190, 0.12); }
+.rtl.office #saver .digits { text-align: right; }
+.office #saver .digits .sep { font-size: 0.46em; vertical-align: 0.4em; margin: 0 0.08em; color: #DCB86F; opacity: 0.9; }
+.office #saver .digits .ap { font-size: 0.28em; font-weight: 500; vertical-align: top; margin: 0 0.25em; color: #DCB86F; }
+.office #saver .zone { margin-top: 16px; font-size: 21px; color: #D8CDB6; text-align: center; white-space: nowrap; }
+.office #saver .zone:empty { display: none; }
+.office #saver .zone::before { content: ''; display: inline-block; width: 8px; height: 8px; margin: 0 10px; border-radius: 4px; vertical-align: 3px; background: #DCB86F; }
+
+.office #saver .pcard { position: absolute; top: 340px; width: 700px; height: 380px; border-radius: 14px; background: rgba(6, 14, 24, 0.6); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.16); }
+.office #saver .pcard .hd { position: absolute; top: 22px; left: 28px; right: 28px; padding-bottom: 12px; font-size: 20px; font-weight: 500; color: #D6AF6B; border-bottom: 1px solid rgba(220, 184, 111, 0.25); }
+.office .pbox { position: absolute; width: 200px; height: 132px; border-radius: 20px; text-align: center; color: #F6EFE0; background: rgba(255, 255, 255, 0.043); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.24); }
+.office .pbox.past { color: #8F8670; background: rgba(255, 255, 255, 0.02); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.12); }
+.office .pbox.next { color: #FFE9B8; background: rgba(220, 184, 111, 0.18); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.55); }
+.office .pbox .pn { margin-top: 24px; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 32px; font-weight: 700; }
+.office .pbox .pt { margin-top: 10px; font-size: 24px; font-weight: 500; white-space: nowrap; }
+
+.office #saver .bottom { position: absolute; left: 72px; right: 72px; top: 880px; height: 150px; border-top: 1px solid rgba(220, 184, 111, 0.3); }
+.office .col { position: absolute; top: 22px; width: 520px; }
+.office .col.empty { display: none; }
+.office .col .lbl { font-size: 19px; font-weight: 500; color: #D6AF6B; white-space: nowrap; }
+.office .col .big { margin-top: 6px; height: 56px; line-height: 56px; white-space: nowrap; }
+.office .col .big .nm { font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 40px; font-weight: 700; color: #F6EFE0; }
+.office .col .big .tm { margin: 0 14px; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 42px; font-weight: 500; color: #FFFCF2; }
+.office .col .big .num { font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 50px; font-weight: 500; color: #FFFCF2; }
+.office .col .big .unit { margin: 0 10px; font-size: 24px; color: #C6BBA4; }
+.office .col .big .day { margin: 0 24px 0 0; font-size: 28px; font-weight: 500; color: #F6EFE0; }
+.rtl.office .col .big .day { margin: 0 0 0 24px; }
+.office .col .sub { margin-top: 6px; font-size: 20px; color: #C6BBA4; white-space: nowrap; }
+.office #saver .title { position: absolute; top: 790px; font-size: 28px; font-weight: 500; color: rgba(246, 239, 224, 0.8); white-space: nowrap; }
+.office #saver .hint { position: absolute; top: 832px; font-size: 21px; color: rgba(246, 239, 224, 0.6); white-space: nowrap; }
+
+/*
+ * MARK: - The office layout (home_layout=office): no shelf, no drawer sliding in, no buttons on top. The clock and dates
+ * at the start edge, the weather and today's prayers at the end edge, the next prayer and the next occasion under the
+ * clock, and one row of the TV's inputs and shortcuts along the bottom, YouTube small in the far corner.
+ */
+.office #platter, .office #tiles, .office #appname, .office #quotes, .office #title, .office #tabs, .office #cards, .office #clock .next, .office #daycard, .office.no-picks #daycard { display: none; }
+.office #home, .office.drawer-open #home { -webkit-transform: none; transform: none; }
+.office #top, .office.drawer-open #top { opacity: 1; }
+.office #drawer, .office.drawer-open #drawer { -webkit-transform: none; transform: none; opacity: 1; }
+.office.drawer-open #sky .lift { opacity: 0; }
+.office #clock { display: block; top: 52px; }
+
+.office .row-title { top: 806px; font-size: 22px; font-weight: 500; }
+.office #drawer .key { top: 846px; height: 150px; border-radius: 22px; }
+.office #drawer .key .sym { top: 34px; width: 44px; height: 44px; margin-left: -22px; }
+.office #drawer .key .label { top: 96px; font-size: 25px; }
+.office #drawer .key.small { width: 150px; }
+.office #drawer .key.small img { position: absolute; left: 50%; top: 50%; width: 96px; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); }
+
+.office #wxbox { position: absolute; top: 60px; right: 72px; width: 640px; text-align: right; color: #F6EFE0; }
+.rtl.office #wxbox { right: auto; left: 72px; text-align: left; }
+.office #wxbox.empty { display: none; }
+.office #wxbox .big { font-size: 40px; font-weight: 500; white-space: nowrap; }
+.office #wxbox .sub { margin-top: 8px; font-size: 22px; color: #C3B8A2; white-space: nowrap; }
+.office #wxbox .rule { margin: 14px 0 0 auto; width: 180px; height: 1px; background: -webkit-linear-gradient(right, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); background: linear-gradient(to left, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); }
+.rtl.office #wxbox .rule { margin: 14px auto 0 0; background: -webkit-linear-gradient(left, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); background: linear-gradient(to right, rgba(220, 184, 111, 0.7), rgba(220, 184, 111, 0)); }
+
+.office #daycard { top: 200px; right: 72px; width: 700px; height: 380px; padding: 0; border-radius: 14px; color: #F6EFE0; background: rgba(6, 14, 24, 0.6); box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.16); }
+.rtl.office #daycard { right: auto; left: 72px; }
+.office #daycard .hd { position: absolute; top: 22px; left: 28px; right: 28px; margin: 0; padding-bottom: 12px; font-size: 20px; font-weight: 500; color: #D6AF6B; border-bottom: 1px solid rgba(220, 184, 111, 0.25); }
+
+.office #infobar { position: absolute; top: 440px; left: 80px; width: 1000px; height: 140px; border-top: 1px solid rgba(220, 184, 111, 0.3); color: #F6EFE0; }
+.rtl.office #infobar { left: auto; right: 80px; }
+.office #infobar.empty { display: none; }
+
+/* The office's weather sits under the pills; the pills keep their place at the top of the end edge. */
+.office #wxbox { top: 150px; }
+
+/*
+ * MARK: - Speed on the TV's chip: only transform animates on what the focus moves over (its shadow changes at once
+ * instead of being redrawn every frame), those keys on their own layers, and smaller blurs.
+ */
+.office .key, .office .pill { will-change: transform; }
+.office #drawer .key, .office .pill { -webkit-transition: -webkit-transform 0.18s ease-out; transition: transform 0.18s ease-out; }
+.office #drawer .key.focus { box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35); }
+.night.office .glass { box-shadow: inset 0 0 0 1px rgba(220, 184, 111, 0.16); }
+.night.office #clock .time { text-shadow: 0 3px 16px rgba(0, 0, 0, 0.45); }
+.office #saver .digits { text-shadow: 0 3px 20px rgba(0, 0, 0, 0.5); }
+
+/*
+ * MARK: - The office layout's two looks, alike: the same photo, layout and accent, a dark veil with sand text at night
+ * and a light veil with navy text by day. Focus is the same in both: the key turns to the opposite of the glass (cream
+ * at night, navy by day) with a ring in the accent, so it reads from across a room.
+ */
+.office:not(.night) #sky .photo { opacity: 1; }
+.office:not(.night) #sky .veil { background-color: transparent; background-image: -webkit-linear-gradient(top, rgba(246, 241, 232, 0.86) 0%, rgba(246, 241, 232, 0.66) 30%, rgba(246, 241, 232, 0.58) 55%, rgba(246, 241, 232, 0.8) 80%, rgba(240, 233, 220, 0.94) 100%); background-image: linear-gradient(rgba(246, 241, 232, 0.86) 0%, rgba(246, 241, 232, 0.66) 30%, rgba(246, 241, 232, 0.58) 55%, rgba(246, 241, 232, 0.8) 80%, rgba(240, 233, 220, 0.94) 100%); }
+.office:not(.night) #wxbox { color: #0C233F; }
+.office:not(.night) #wxbox .sub { color: #61553E; }
+.office:not(.night) #wxbox .rule { background: -webkit-linear-gradient(right, rgba(141, 122, 89, 0.8), rgba(141, 122, 89, 0)); background: linear-gradient(to left, rgba(141, 122, 89, 0.8), rgba(141, 122, 89, 0)); }
+.rtl.office:not(.night) #wxbox .rule { background: -webkit-linear-gradient(left, rgba(141, 122, 89, 0.8), rgba(141, 122, 89, 0)); background: linear-gradient(to right, rgba(141, 122, 89, 0.8), rgba(141, 122, 89, 0)); }
+.office:not(.night) #infobar { color: #0C233F; border-top-color: rgba(141, 122, 89, 0.4); }
+.office:not(.night) #infobar .col .lbl { color: #8D7A59; }
+.office:not(.night) #infobar .col .big .nm, .office:not(.night) #infobar .col .big .tm, .office:not(.night) #infobar .col .big .num { color: #0C233F; }
+.office:not(.night) #infobar .col .big .unit, .office:not(.night) #infobar .col .sub { color: #61553E; }
+.office:not(.night) .row-title { color: #61553E; }
+.office:not(.night) #drawer .key { color: #0C233F; background: rgba(255, 255, 255, 0.66); box-shadow: inset 0 0 0 1px rgba(141, 122, 89, 0.28); }
+
+/* Focus, at night: cream with a gold ring; by day: navy with a brown-gold ring */
+.night.office #drawer .key.focus, .night.office .pill.focus { background: #FFF8EA; color: #14181E; box-shadow: 0 0 0 4px #DCB86F, 0 10px 24px rgba(0, 0, 0, 0.45); }
+.office:not(.night) #drawer .key.focus, .office:not(.night) .pill.focus { background: #0C233F; color: #FFF8EA; box-shadow: 0 0 0 4px #8D7A59, 0 10px 24px rgba(0, 0, 0, 0.25); }
+.office #drawer .key.focus { -webkit-transform: scale(1.08); transform: scale(1.08); z-index: 2; }
+
+/* Flat (Samsungs up to 2 GB) drops the soft shadows of what moves; the focus ring stays: a ring without blur costs
+   nothing to draw, and without it the focus is hard to see from across a room. */
+.flat .night.office #drawer .key.focus, .flat .night.office .pill.focus { box-shadow: 0 0 0 4px #DCB86F !important; }
+.flat .office:not(.night) #drawer .key.focus, .flat .office:not(.night) .pill.focus { box-shadow: 0 0 0 4px #8D7A59 !important; }

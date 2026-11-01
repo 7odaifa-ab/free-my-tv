@@ -12,6 +12,10 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 import translate  # noqa: E402  (the catalogues and the keys the web app uses)
+try:
+    import custom_build  # noqa: E402  (a fork's own settings and files, when it has them)
+except ImportError:
+    custom_build = None
 
 GENERIC = {'tmdbKey': '', 'tmdbRegion': '', 'latitude': '', 'longitude': '', 'city': '', 'language': 'auto',
            'currency': '', 'temperature': 'auto', 'theme': 'auto', 'showCrypto': True, 'hideAnimation': False, 'hideApps': [],
@@ -21,7 +25,7 @@ GENERIC = {'tmdbKey': '', 'tmdbRegion': '', 'latitude': '', 'longitude': '', 'ci
 def config_from_args(args):
     """The settings for these command-line arguments (--generic, --config PATH or config.properties)."""
     if '--generic' in args:
-        return dict(GENERIC)
+        return dict(GENERIC, **(custom_build.settings({}, True) if custom_build else {}))
     path = os.path.join(ROOT, 'config.properties')
     if '--config' in args:
         path = os.path.abspath(args[args.index('--config') + 1])
@@ -51,7 +55,7 @@ def read_config(path):
             sys.exit('config.properties: %s must be a number (got "%s")' % (key, v))
         return v
 
-    return {
+    config = {
         'tmdbKey': values.get('tmdb_key', ''),
         'tmdbRegion': values.get('tmdb_region', 'US') or 'US',
         'latitude': number('latitude', '40.7128'),
@@ -68,6 +72,9 @@ def read_config(path):
         'drawerFirst': values.get('drawer_first', 'false').lower() == 'true',
         'openPicksIn': 'nuvio' if values.get('open_picks_in', '').strip().lower() == 'nuvio' else 'apps',
     }
+    if custom_build:
+        config.update(custom_build.settings(values))
+    return config
 
 
 def coins():
@@ -111,6 +118,8 @@ def files(config, made_by):
     for name in ('InterVariable.ttf', 'OFL.txt'):
         with open(os.path.join(ROOT, 'app', 'assets', 'fonts', name), 'rb') as f:
             out['fonts/' + name] = f.read()
+    if custom_build:
+        custom_build.files(out, config)
     return out
 
 

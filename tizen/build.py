@@ -67,7 +67,10 @@ def build(preview, config, profile):
     version = re.search(r'<widget [^>]*version="([^"]+)"', manifest).group(1)
     app = webapp.files(config, 'tizen/build.py')
     for name in ('config.xml', 'icon.png'):
-        with open(os.path.join(ROOT, 'tizen', name), 'rb') as f:
+        source = os.path.join(ROOT, 'tizen', name)
+        if name == 'icon.png' and webapp.custom_build:
+            source = webapp.custom_build.icon(source)   # a fork's own icon, when it has one
+        with open(source, 'rb') as f:
             app[name] = f.read()
 
     with zipfile.ZipFile(WGT, 'w', zipfile.ZIP_DEFLATED) as z:
