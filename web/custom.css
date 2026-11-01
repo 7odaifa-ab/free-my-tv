@@ -115,6 +115,7 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #saver .veil { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: -webkit-linear-gradient(top, rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); background-image: linear-gradient(rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); }
 .office #saver .veil::after { content: ''; position: absolute; right: 72px; top: 200px; width: 640px; height: 604px; background-image: url('logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.5; }
 .rtl.office #saver .veil::after { right: auto; left: 72px; }
+.office #saver .org { position: absolute; top: 818px; width: 640px; text-align: center; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 30px; font-weight: 700; color: #F6EFE0; white-space: nowrap; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); }
 .office #saver .stg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; color: #F6EFE0; -webkit-transition: -webkit-transform 3s ease; transition: transform 3s ease; }
 
 .office #saver .dates { position: absolute; top: 34px; width: 760px; }

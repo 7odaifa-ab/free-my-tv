@@ -331,6 +331,7 @@ window.FreeMyTVCustom = function (h) {
     el('div', 'zone', ck);
     var bottom = el('div', 'bottom', stg), cols = [column(bottom), column(bottom), column(bottom)];
     var title = el('div', 'title', stg), hint = el('div', 'hint', stg);
+    if (CONFIG.officeLabel) endAt(el('div', 'org', stg, CONFIG.officeLabel), 72);   // under the logo
     el('div', 'dim', s);
     startAt(dates, 72);
     endAt(weather, 72);
