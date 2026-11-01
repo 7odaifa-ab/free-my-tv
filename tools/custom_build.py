@@ -7,6 +7,7 @@ config.properties:
                        mirroring, USB and Home Settings, YouTube small, the weather and the next prayer above
   prayer_times=true    the Hijri date and the five prayer times for latitude/longitude (web/prayer.js, Umm al-Qura)
   hijri_offset=0       moves the Hijri date by whole days (-2 to 2)
+  office_label=        a line above the clock, the office's name (UTF-8)
 
 The person's brand, used when it's there and never in a --generic build (git ignores it all):
   app/assets/fonts/thmanyah/*.woff2   Thmanyah Sans and Serif Display
@@ -33,6 +34,7 @@ def settings(values, generic=False):
         'homeLayout': values.get('home_layout', '').strip().lower(),
         'prayerTimes': values.get('prayer_times', 'false').lower() == 'true',
         'hijriOffset': hijri_offset(values.get('hijri_offset', '') or '0'),
+        'officeLabel': values.get('office_label', '').strip(),
         'generic': generic,
     }
 
@@ -43,6 +45,8 @@ def files(out, config):
         return
     web = os.path.join(ROOT, 'web', 'backgrounds')
     for name in sorted(os.listdir(web)):
+        if not os.path.isfile(os.path.join(web, name)):
+            continue   # a folder of photos kept there for later
         with open(os.path.join(web, name), 'rb') as f:
             out['backgrounds/' + name] = f.read()
     if config.get('generic'):

@@ -3,14 +3,14 @@
  * it: the office layout (home_layout=office) in UrTV's look. home.js hands it its helpers (FreeMyTVCustom(api)) and asks
  * it first in a few places; without home_layout=office it returns null and the home screen is main's.
  *
- *  - top: pills for the screensaver, the network and the TV's settings at the end edge; the clock (ص/م and the colon in
- *    the accent), the date line "weekday، Hijri · Gregorian" and the weather;
- *  - under the clock: the next prayer and the next occasion (Ramadan, the Eids), from prayer.js;
+ *  - top: pills for the screensaver, the network and the TV's settings at the end edge; the office's name
+ *    (office_label), the clock (ص/م and the colon in the accent), the date line "weekday، Hijri · Gregorian" and the weather;
+ *  - above the row: the next prayer and the next occasion (Ramadan, the Eids), from prayer.js;
  *  - one row along the bottom, no shelf and no drawer: the first HDMI port, screen mirroring, USB, Home Settings, and
  *    YouTube small in the far corner;
  *  - behind it a Saudi landscape (web/backgrounds) under a veil, dark at night and light by day, and the person's logo;
- *  - the screensaver in UrTV's layout: the dates and the weather, the big clock, today's prayers, and a line of the next
- *    prayer, the next occasion and the coming days.
+ *  - the screensaver in UrTV's layout: the dates and the weather, the big clock, the logo, and a line of the next prayer,
+ *    the next occasion and the coming days.
  * Plain ES5, like the rest of web/. Styles: custom.css.
  */
 window.FreeMyTVCustom = function (h) {
@@ -90,14 +90,15 @@ window.FreeMyTVCustom = function (h) {
     if (!c.getAttribute('data-custom')) {
       c.setAttribute('data-custom', '1');
       c.innerHTML = '';
+      el('div', 'org', c, CONFIG.officeLabel || '');
       el('div', 'greet', c);
       el('div', 'time', c);
       el('div', 'date', c);
     }
     var d = new Date(), at = d.getTime();
-    put(c.children[0], window.Prayer ? Prayer.greeting(d) : '');
-    clockDigits(c.children[1], at);
-    put(c.children[2], dateLine(at));
+    put(c.children[1], window.Prayer ? Prayer.greeting(d) : '');
+    clockDigits(c.children[2], at);
+    put(c.children[3], dateLine(at));
     info(at);
     skyPhoto();
     return true;
@@ -206,7 +207,7 @@ window.FreeMyTVCustom = function (h) {
     return {items: items, inputs: groupStart};
   }
 
-  // MARK: - The weather, and the line under the clock
+  // MARK: - The weather, and the line above the row
 
   /** One column of a line: its label, its big line (spans by class), the line under it. */
   function fill(col, label, spans, sub) {
@@ -326,14 +327,12 @@ window.FreeMyTVCustom = function (h) {
     var ck = el('div', 'sclock', stg);
     el('div', 'digits', ck);
     el('div', 'zone', ck);
-    var card = prayerOn() ? el('div', 'pcard', stg) : null;
     var bottom = el('div', 'bottom', stg), cols = [column(bottom), column(bottom), column(bottom)];
     var title = el('div', 'title', stg), hint = el('div', 'hint', stg);
     el('div', 'dim', s);
     startAt(dates, 72);
     endAt(weather, 72);
     startAt(ck, 120);
-    if (card) endAt(card, 72);
     startAt(cols[0], 0);
     startAt(cols[1], 590);
     startAt(cols[2], 1110);
@@ -388,7 +387,6 @@ window.FreeMyTVCustom = function (h) {
     put(s.querySelector('.zone'), Data.city ? (window.Prayer ? Prayer.text('timeIn') : '') + Data.city : '');
     put(s.querySelector('.wx .big'), w ? Data.degrees(w.temp) + '  ' + Data.condition(w.code, w.isDay) : '');
     put(s.querySelector('.wx .sub'), w ? (Data.city ? Data.city + ' · ' : '') + Data.degrees(w.max) + ' / ' + Data.degrees(w.min) : '');
-    if (s.querySelector('.pcard')) prayerGrid(s.querySelector('.pcard'), at);
     var cols = s.querySelectorAll('.bottom .col');
     prayerColumns(cols, at);
     var days = w && w.days ? w.days.slice(1, 4) : [], list = [];
@@ -411,24 +409,6 @@ window.FreeMyTVCustom = function (h) {
     if (hour >= 21) return Math.round((hour - 21) / 2 * 46) / 100;
     if (hour >= 7) return 0;
     return Math.round((7 - hour) / 2 * 46) / 100;
-  }
-
-  /** Today's prayers in a 3 x 2 grid: those gone by dimmed, the next one lit; redrawn only when that changes. */
-  function prayerGrid(box, now) {
-    var t = Prayer.times(now, Prefs.latitude(), Prefs.longitude(), offset()), n = nextPrayer(now);
-    if (!t) { box.innerHTML = ''; return; }
-    var sig = Math.floor(now / 60000) + ':' + (n ? n.key : '');
-    if (box.getAttribute('data-sig') === sig) return;
-    box.setAttribute('data-sig', sig);
-    box.innerHTML = '';
-    el('div', 'hd', box, Prayer.text('title'));
-    for (var i = 0; i < Prayer.keys.length; i++) {
-      var k = Prayer.keys[i], cell = el('div', 'pbox' + (n && n.key === k ? ' next' : t[k] < now ? ' past' : ''), box);
-      startAt(cell, 28 + (i % 3) * 224);
-      cell.style.top = (78 + Math.floor(i / 3) * 150) + 'px';
-      el('div', 'pn', cell, Prayer.name(k, t[k]));
-      el('div', 'pt', cell, formatDate('format|h:mm a', t[k]));
-    }
   }
 
   return {
