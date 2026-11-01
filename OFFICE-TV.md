@@ -1,0 +1,311 @@
+# Office TV: technical record
+
+What we built on top of Free My TV for the office screen of جمعية مراكز الأحياء بمنطقة مكة المكرمة, why each piece is
+there, what it gives us, and what could come next. `FORK.md` is the short guide for merging main's updates; this file
+is the full history and the plan.
+
+Last updated: 2026-11-01.
+
+---
+
+## 1. Goal
+
+A calm, ad-free Arabic screen for an office TV, used for HDMI (a laptop), screen mirroring, a USB stick and now and
+then YouTube. Not a home media screen: no TMDB key, no film picks, no app shelf, no live TV.
+
+What it shows:
+
+- the office's name, the time, the Gregorian and Hijri dates, and the weather for Jeddah;
+- the next prayer and the countdown to the next occasion (Ramadan, the two Eids);
+- one row of large keys: HDMI 1, Screen Mirroring, USB, Home Settings, and YouTube small in the corner;
+- three pills on top: Screensaver, network status, TV Settings;
+- the office's own photos behind it all, with the logo;
+- a screensaver in the same style that is safe to leave on all night.
+
+## 2. The TV and the computer
+
+| | |
+|---|---|
+| TV | Samsung UA65CU7000UXSA, 2023, Tizen 9.0, 65", 1920 x 1080 UI, 3 HDMI ports |
+| TV IP | 10.0.0.52 |
+| City | Jeddah (21.4858, 39.1925), time zone Asia/Riyadh |
+| Computer | Windows 11, IP 10.0.0.172 (was 10.0.0.190; the TV's *Host PC IP* must match the current one) |
+| Signing | Samsung certificate profile `FreeMyTV`, made for this TV's DUID with Samsung's tizen-agent-skills certificate manager |
+| Tizen tools | `~/tizen-sdk` (CLI in `~/tizen-sdk/tools/ide/bin`) |
+
+Developer mode on the TV: *Apps* → `1 2 3 4 5` (on a remote without numbers, the on-screen number pad) → Developer mode
+on, Host PC IP = the computer's IP → restart the TV.
+
+## 3. Branches and versions
+
+| Branch | Where | What |
+|---|---|---|
+| `main` / `origin/main` | upstream (simbasjungles/free-my-tv) | The project. We merge from it; we never change it directly. |
+| `pr/arabic-rtl` | pushed to our fork (`fork` remote, github.com/7odaifa-ab/free-my-tv) | One commit (`ba2743a`): Arabic and the right-to-left layout for LG and Samsung. Source of the upstream pull request simbasjungles/free-my-tv#415. |
+| `office-tv` | **local only, never pushed** | What runs on the TV: `pr/arabic-rtl` + our own layer (sections 5-6) + the brand. |
+| `arabic-rtl-theme` | local, archive | The first version, where the office look was mixed into main's files. Kept for reference only. |
+
+The app's version is main's (`1.3.0` at the time of writing); our builds are identified by the `office-tv` commit.
+
+### History
+
+| Date | Commit | Step |
+|---|---|---|
+| 2026-10-28 | `14a72e0` (archive) | Arabic and a mirrored right-to-left layout in the web app. |
+| 2026-10-28 | `ae5657e` (archive) | The brand palette on text, focus and selected rows. |
+| 2026-11-01 | `9c453c1` (archive) | Hijri date and prayer times, computed on the TV. |
+| 2026-11-01 | `cda91df`, `d46590f`, `35de08b` (archive) | Thmanyah fonts, the faded logo in a bottom corner with padding, the office's icon, a calmer screensaver. |
+| 2026-11-01 | `886c4ad` (archive) | UrTV's look, rebuilt in our own code (clock with coloured ص/م, pills, screensaver layout). |
+| 2026-11-01 | `981954c`, `7090477` (archive) | The office layout: no shelf, no drawer, no live TV; HDMI 1 only; no prayer box; faster on the TV. |
+| 2026-11-01 | `60a826d`, `cc73be0` (archive) | Clear focus in both looks, a light look matching the dark one; 9 bugs fixed after a review. |
+| 2026-11-01 | `52f472c` (archive) | Merged main (dimmer, ambient clock, flat mode); 134 new strings translated to Arabic. |
+| 2026-11-01 | `ba2743a` | Arabic + RTL alone, cleaned up for upstream → PR #415. |
+| 2026-11-01 | `9ef3adb` | Our layer moved out of main's files (`custom.js`, `custom.css`, `prayer.js`, `custom_build.py`). |
+| 2026-11-01 | `0115142`, `519cbe9` | The office's name on the pills' row, the clock centred, the prayer line above the row, the logo clear of YouTube, no prayer grid on the screensaver. |
+| 2026-11-01 | `70950dd` | The office's own photos as backgrounds, softened for both looks. |
+| 2026-11-01 | (this commit) | A stronger logo, the office's app icon and banner, this document. |
+
+## 4. Upstream contribution (PR #415)
+
+What went to the project, because every Arabic speaker using Free My TV benefits from it:
+
+- `app/assets/i18n/ar.json`: all 438 strings, with Arabic's six plural forms (zero, one, two, few, many, other).
+- `web/strings.js`: the Arabic locale `ar-SA-u-ca-gregory-nu-arab` (Gregorian calendar, Arabic-Indic digits), Arabic's
+  plural rule for TVs without `Intl.PluralRules`, `I18N.rtl`, `I18N.digits` (٠-٩ in numbers, while names like
+  "HDMI 1" stay as they are), `I18N.period` (ص/م alone).
+- `web/home.js`: `startAt` / `endAt` / `slide` place everything from the start edge; ← and → follow the mirrored
+  layout; switching language flips at once. Left-to-right languages are unchanged.
+- `web/home.css`: `.rtl` rules for what home.js doesn't place, no letter spacing on joined Arabic letters.
+- `web/data.js`: temperatures in the language's digits.
+- `web/tv.js`: Samsung lists only the HDMI ports the TV really has (the UA65CU7000 has 3; the app showed a 4th that
+  switched to nothing).
+- README and CLAUDE.md updated.
+
+Status: open, no review yet. Auto-fix watches it (CI failures, conflicts, comments). **Once it merges**, `ar.json` and
+the RTL code come from main, and `office-tv` only needs to merge main.
+
+## 5. Architecture: our layer, kept apart from main
+
+**Why:** main changes often. When our look was mixed into `home.js` and `home.css`, every update meant conflicts in
+hundreds of lines. Now main's files carry only one-line hooks, and everything else is in files main never touches.
+
+**Benefit:** an update from main is usually `git merge origin/main` with no conflicts, or a few one-line ones.
+
+### Our files
+
+| File | Role |
+|---|---|
+| `web/custom.js` | The office layout (`window.FreeMyTVCustom(api)`). Returns `null` unless `home_layout=office`, so the app is main's otherwise. |
+| `web/custom.css` | Its styles; every rule is under `.office`. |
+| `web/prayer.js` | Prayer times, Hijri date, occasions, greeting. |
+| `web/backgrounds/` | Unsplash fallback photos (credits in `CREDITS.txt`). |
+| `web/icons/usb.svg`, `wifi.svg`, `wifi_off.svg` | Icons for the row and the network pill. |
+| `tools/custom_build.py` | Our settings and files for the build. |
+| `tools/office_photos.py` | Prepares the office's own photos. |
+| `FORK.md`, `OFFICE-TV.md` | Guides. |
+
+### Hooks in main's files
+
+- `web/home.js`: `var custom`, `customApi()` (hands our layer main's helpers: `$`, `el`, `sym`, `setClass`, `startAt`,
+  `endAt`, `hover`, `nearest`, `centerX`, `launcher`, `tvSettings`, `openSettings`, `showSaver`, `updateFocus`,
+  `sheetOpen`, `saverPhotos`, `pickTarget`, `setSaverPick`, `rtl()`, `st`, `Z`, `inputs()`, `apps()`), and one
+  `if (custom && custom.x(...)) return` line in `updateFocus`, `renderTop`, `renderClock`, `renderDrawer`,
+  `renderPanels`, `move`, `activate`, `back`, `showSaver`, `hideSaver`, `checkNight`, the 30-second loop and init.
+  Our object answers `{focus, buttons, clock, drawer, panels, move, activate, back, saver, hideSaver, tickSaver, night}`.
+- `web/index.html`: loads `custom.css`, `prayer.js`, `custom.js`.
+- `tools/webapp.py`: `import custom_build` (optional), its `settings()` into `config.js`, its `files()` into the package.
+- `tizen/build.py`: `custom_build.icon()` for the package icon.
+- `.gitignore`: the brand's files.
+
+`grep -n custom web/home.js` lists every hook.
+
+### Build pipeline
+
+`tizen/build.py` → `tools/webapp.py` reads `config.properties`, writes `config.js` (with `custom_build.settings()`),
+packs `web/` plus `custom_build.files()` (photos, fonts, logo), adds the icon, and signs with the `FreeMyTV` profile.
+`tizen/install.py` pushes it over SDB (port 26101), installs with `vd_appinstall` and opens it.
+
+## 6. Features: what, why, benefit
+
+### 6.1 Arabic, right to left
+- **What:** the whole interface in Arabic, mirrored; Arabic-Indic digits in numbers, Western names kept.
+- **Why:** an Arabic-speaking office.
+- **Benefit:** reads naturally; sent upstream so it stays maintained with the project.
+
+### 6.2 Brand
+- **Palette:** Brown/Gold `#8D7A59`, Teal `#57938A`, Beige `#CBBAA1`, Light Mint `#CADACD`, Light Beige `#DDD2C0`,
+  Dark Brown `#61553E`, Dark Navy `#0C233F`. Gold accents at night `#DCB86F`, cream text `#F6EFE0`.
+- **Fonts:** Thmanyah Sans (UI) and Thmanyah Serif Display (clock, numbers, titles), `@font-face` in `custom.css`.
+- **Logo:** `app/assets/logo-corner.png` (780 x 736 PNG; an SVG was slow on the TV), drawn behind the home screen at
+  the end edge above the row (510 x 480, opacity 0.62 by day, 0.55 at night) and on the screensaver where the prayer
+  grid used to be (640 x 604, opacity 0.5).
+- **Icon and banner:** `app/res/drawable-nodpi/icon.png` (192 px, the office's mark); `tizen/icon.local.png` is a copy
+  used for the Samsung package.
+- **Office name:** `office_label` in `config.properties`, shown on the pills' row at the start edge, Thmanyah Display
+  34 px bold, the same height (62 px) and line as the pills.
+- **Why / benefit:** the screen is the organisation's, not a generic TV.
+
+### 6.3 Prayer times and the Hijri date (`web/prayer.js`)
+- **What:** the five prayers by Umm al-Qura (Fajr at 18.5°, Isha 90 min after Maghrib, 120 in Ramadan, Asr at shadow
+  factor 1), the Hijri date through `Intl` `islamic-umalqura` with `hijri_offset` (-2..2 days), Ramadan and the two
+  Eids with a day countdown, a greeting by time of day, الجمعة instead of الظهر on Fridays, Arabic counting ("بعد ٥٨ دقيقة").
+- **Why:** an office in Saudi Arabia plans around prayers; no network service needed.
+- **Benefit:** works offline; verified within one minute of Aladhan for Jeddah.
+
+### 6.4 Home screen layout (`home_layout=office`)
+- **Top row:** the office's name (start edge) and three pills (end edge): Screensaver, network status (Wi-Fi icon,
+  متصل / غير متصل, live on `online`/`offline` events), TV Settings. Network opens Samsung's network settings, falling
+  back to TV Settings.
+- **Weather:** under the pills, UrTV style: temperature and condition, city and high/low, a gold rule.
+- **Clock:** greeting, the time with ص/م and the colon in gold, the date line "weekday، Hijri · Gregorian"; centred
+  vertically between the top row (ends at 118 px) and the prayer line (starts at 640 px).
+- **Prayer line:** just above the row: next prayer (name, time, "بعد ..."), and the next occasion (days left, date).
+- **Row:** HDMI 1 (the first port only), Screen Mirroring and USB (only if the TV has those apps), Home Settings, and
+  YouTube small in the far corner. Key width is computed to fit.
+- **Removed:** app shelf, drawer, live TV, picks, quotes, the prayer box.
+- **Navigation:** ↑/↓ between the row and the pills; ←/→ along each; Back leaves to Samsung's home.
+- **Why / benefit:** everything the office needs in one press, nothing else to confuse visitors.
+
+### 6.5 Backgrounds
+- **What:** the office's 15 photos (`web/backgrounds/AlAhyaa/`, drone and ground shots of the centre), prepared by
+  `tools/office_photos.py`: 1920 wide, saturation 0.6, Gaussian blur 3 px, JPEG 82 (100-180 KB each instead of
+  10-27 MB). For each photo it stores a "keep" factor (target middle brightness 85/255, between 0.55 and 1) that sets
+  the opacity of a dark layer over it. A new photo every 30 minutes, the same order on every TV. Falls back to the
+  Unsplash set when there are no own photos.
+- **Kept as before:** the veil gradients (dark at night, cream by day) over the photo.
+- **Why:** the photos are bright, sunny and busy (courts, pools); raw, they drowned the text and the logo.
+- **Benefit:** the centre's own places on screen, in both looks, with no cost on the TV (the softening is done once on
+  the computer).
+
+### 6.6 Screensaver (UrTV's layout)
+- **What:** dates and weather on top, a 300 px clock with "بتوقيت جدة", the logo at the end edge, a bottom line of next
+  prayer, next occasion and the next three days' weather. Photos cross-fade with a 60 s settle (no endless motion).
+- **Burn-in care:** everything moves a few pixels every 4 minutes along a 7-step path; a black dimmer rises from 9 pm
+  to 0.46 at 11 pm, held until 5 am, gone by 7 am.
+- **Removed:** today's prayer grid (2026-11-01), on request.
+
+### 6.7 Two looks, one design
+- **What:** dark (cream text, gold accents) and light (navy text, brown accents) with the same layout, photo and
+  logo. Focus is the opposite of the glass: cream with a gold ring at night, navy with a brown ring by day, plus a
+  1.08 scale. Main's "flat" mode (Samsungs with 2 GB or less lose shadows) keeps our ring via `!important`.
+- **Why:** focus was invisible at night and the light look was broken (light text on a light veil).
+- **Benefit:** whoever walks up to the TV sees where they are.
+
+### 6.8 Performance
+- Only `transform` and `opacity` animate; the keys and pills sit on their own layers; smaller blurs; no blur filters
+  at runtime; text is written only when it changes (`put()`), the clock only when the minute changes; the logo is a
+  PNG at its shown size; photos at screen size.
+- Confirmed smooth on the TV.
+
+## 7. Configuration (`config.properties`, git-ignored)
+
+```
+language=ar
+city=Jeddah
+latitude=21.4858
+longitude=39.1925
+tmdb_region=SA
+temperature=C
+show_crypto=false
+theme=dark
+drawer_first=false
+prayer_times=true
+hijri_offset=0
+home_layout=office
+office_label=جمعية مراكز الأحياء بمنطقة مكة المكرمة
+```
+
+`home_layout`, `prayer_times`, `hijri_offset` and `office_label` are ours (`tools/custom_build.py`); the rest are main's.
+
+## 8. Private files (never in git, never in a `--generic` build)
+
+| File | Why private |
+|---|---|
+| `config.properties` | The project's rule: settings and any key stay local. |
+| `app/assets/fonts/thmanyah/*.woff2` | Thmanyah's licence doesn't allow republishing. |
+| `app/assets/logo-corner.png`, `app/assets/app icon.zip` | The organisation's brand. |
+| `tizen/icon.local.png` | Copy of the office icon for the Samsung package. |
+| `web/backgrounds/AlAhyaa/`, `app/assets/backgrounds.local/` | The organisation's photos. |
+| `~/tizen-sdk-data` (certificate, profile) | Signing keys; passwords are typed only by the owner, never shared. |
+
+`app/res/drawable-nodpi/icon.png` and `banner.png` (the office's icon and banner) are committed on `office-tv` only,
+which is never pushed; they must never go into `pr/arabic-rtl` or any pull request.
+
+## 9. Routine tasks
+
+**Build and install**
+
+```bash
+python tizen/build.py --sign FreeMyTV
+python tizen/install.py 10.0.0.52
+```
+
+If SDB can't connect: kill Samsung's `sdb.exe` if it is running, and check the TV's Host PC IP is this computer's
+current IP. Use `python`, not `python3`, on this Windows machine.
+
+**Add or change photos:** put them in `web/backgrounds/AlAhyaa/`, run `python tools/office_photos.py`, then build and
+install.
+
+**Change the office name:** edit `office_label`, then build and install.
+
+**Preview at the TV's size:** `python webos/build.py --preview`, serve `out/` (`.claude/launch.json` has a `preview`
+config on port 8765), open `webos/index.html` at 1920 x 1080.
+
+**Update from main:** see `FORK.md` (merge, translate new strings into `ar.json`, ES5 and CSS checks, generic builds,
+preview, install).
+
+**Checks before any push to `pr/arabic-rtl`:** `python tools/translate.py --check`, `npx acorn --ecma5` on `web/*.js`,
+`python webos/build.py --generic`, `python tizen/build.py --generic`.
+
+## 10. Problems met, and what fixed them
+
+| Problem | Cause | Fix |
+|---|---|---|
+| SDB connection reset | Host PC IP typed reversed in the Arabic UI; later the computer's IP changed | Typed correctly on the TV each time. |
+| ص/م on the wrong side of the time | Bidi reordering of mixed digits | Digits in their own spans with `direction: ltr; unicode-bidi: bidi-override`. |
+| Focus invisible at night | `.night .glass` overrode `.key.focus` | Cream key with a gold ring; kept in flat mode with `!important`. |
+| Light look unreadable | Light text on a light veil | `.office:not(.night)` rules: navy text, brown accents. |
+| Three photos zeroed | A Windows System.Drawing JPEG re-encode | Restored from git; photo processing now with Pillow into a separate folder, originals never touched. |
+| `custom.css` generator dropped rules | It removed declarations also in base CSS | Removes only main's exact flat-mode block. |
+| Edit scripts failing | CRLF vs LF | Scripts normalise and restore line endings. |
+| `0 debug` refused on Tizen 9 | Retail firmware | A temporary page posting to the PC read the app list and `VIDEOSOURCE`; removed after. |
+| A 4th HDMI that did nothing | The app assumed 4 ports | Only ports the TV lists (sent upstream). |
+| Logo under YouTube | Logo bottom corner, 736 px tall | Logo above the row, 480 px tall. |
+| Build crash risk | A folder inside `web/backgrounds` | Only `.jpg` files are packed. |
+| YouTube letters invisible in the light look | White logo on a white key | That key is navy in the light look. |
+
+## 11. Ideas and plan
+
+Ordered by value for the office. None is started.
+
+**Content**
+1. **Announcements line:** a short message (meeting, event, welcome a visitor) set from a phone, shown under the clock.
+   A web app can't serve a page on Samsung, so it would come from a small JSON file we host (GitHub Pages or the
+   organisation's site) and the TV polls every few minutes.
+2. **Today's events:** read a shared calendar (an ICS link) and show the next two meetings.
+3. **Iqama countdown:** minutes from Adhan to Iqama for the office's prayer room, set per prayer.
+4. **Photo captions:** the place's name on each photo (from a small list next to the photos).
+5. **Move the prayer and greeting words into `ar.json`** instead of `prayer.js`'s own table, so they follow the
+   catalogue rules.
+
+**Screen**
+6. **Day/night by sunrise and sunset** (from prayer.js) instead of fixed hours, for the look and the dimmer.
+7. **Screensaver after office hours only**, and a fully black screen at night (or turning the TV to standby, if
+   Samsung's API allows it for a Developer Mode app).
+8. **Logo variants:** a light logo for the dark look and a dark one for the light look, instead of one PNG with opacity.
+9. **HDMI auto-switch:** when a laptop is plugged into HDMI 1, offer to switch (Samsung's `tvwindow` source events).
+
+**Maintenance**
+10. **Autorun:** turn on *Autorun Last App* so the TV starts into Free My TV; check if the 2023 set honours it.
+11. **One-command update script:** fetch main, merge, check, build, install, with a summary of what changed.
+12. **A second office TV:** the same build works with another `office_label` and photos; the certificate must be
+    made for that TV's DUID too.
+13. **After PR #415 merges:** drop `ar.json` and RTL from our list, merge main, confirm nothing doubled.
+
+## 12. Where things are
+
+- Project: github.com/simbasjungles/free-my-tv
+- Our fork: github.com/7odaifa-ab/free-my-tv (`pr/arabic-rtl` only)
+- Upstream PR: simbasjungles/free-my-tv#415
+- Design reference: github.com/tshi-dev/UrTV (no licence: its design is reimplemented in our code, none of its code
+  is copied)

@@ -18,6 +18,7 @@ from main's files, so main's updates merge with little or nothing to fix.
 | `tools/custom_build.py` | Our settings (`home_layout`, `prayer_times`, `hijri_offset`, `office_label`) and files (photos, fonts, logo, icon). |
 | `tools/office_photos.py` | Makes the office's own photos (`web/backgrounds/AlAhyaa/`) into softened 1920-wide backgrounds in `app/assets/backgrounds.local/`, used instead of the Unsplash ones. Run it again after adding photos. |
 | `FORK.md` | This guide. |
+| `OFFICE-TV.md` | The full record: every change, why, what it gives, and the plan for what comes next. |
 
 Not in git (the person's brand, `.gitignore`): `app/assets/fonts/thmanyah/`, `app/assets/logo-corner.png`,
 `app/assets/backgrounds.local/`, `web/backgrounds/AlAhyaa/`, `tizen/icon.local.png` (a copy of `app/res/drawable-nodpi/icon.png`), and `config.properties`.

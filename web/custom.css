@@ -33,11 +33,11 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.28;
+  opacity: 0.62;
   -webkit-transition: opacity 2s;
   transition: opacity 2s;
 }
-.night.office #sky .brand { opacity: 0.2; }
+.night.office #sky .brand { opacity: 0.55; }
 .rtl.office #sky .brand { right: auto; left: 72px; }   /* the corner away from the clock */
 
 /* MARK: - Screensaver: the brand's backdrop, the prayers, the night dimmer */
@@ -113,7 +113,7 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 @keyframes settle { from { transform: scale(1.055) translate(-0.55%, -0.4%); } to { transform: scale(1.03); } }
 .office #saver .photo.settle { -webkit-animation: settle 60s ease-out both; animation: settle 60s ease-out both; }
 .office #saver .veil { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: -webkit-linear-gradient(top, rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); background-image: linear-gradient(rgba(3, 9, 16, 0.62) 0%, rgba(3, 9, 16, 0.3) 22%, rgba(3, 9, 16, 0.12) 46%, rgba(3, 9, 16, 0.42) 74%, rgba(2, 5, 10, 0.88) 100%); }
-.office #saver .veil::after { content: ''; position: absolute; right: 72px; top: 200px; width: 640px; height: 604px; background-image: url('logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.2; }
+.office #saver .veil::after { content: ''; position: absolute; right: 72px; top: 200px; width: 640px; height: 604px; background-image: url('logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.5; }
 .rtl.office #saver .veil::after { right: auto; left: 72px; }
 .office #saver .stg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; color: #F6EFE0; -webkit-transition: -webkit-transform 3s ease; transition: transform 3s ease; }
 
