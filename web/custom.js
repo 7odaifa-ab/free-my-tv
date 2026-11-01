@@ -90,15 +90,14 @@ window.FreeMyTVCustom = function (h) {
     if (!c.getAttribute('data-custom')) {
       c.setAttribute('data-custom', '1');
       c.innerHTML = '';
-      el('div', 'org', c, CONFIG.officeLabel || '');
       el('div', 'greet', c);
       el('div', 'time', c);
       el('div', 'date', c);
     }
     var d = new Date(), at = d.getTime();
-    put(c.children[1], window.Prayer ? Prayer.greeting(d) : '');
-    clockDigits(c.children[2], at);
-    put(c.children[3], dateLine(at));
+    put(c.children[0], window.Prayer ? Prayer.greeting(d) : '');
+    clockDigits(c.children[1], at);
+    put(c.children[2], dateLine(at));
     info(at);
     skyPhoto();
     return true;
@@ -116,6 +115,8 @@ window.FreeMyTVCustom = function (h) {
   el('div', 'dark', photo);
   sky.insertBefore(photo, sky.querySelector('canvas'));
   sky.insertBefore(brand, sky.querySelector('.lift'));
+  // The office's name, on the pills' row at the start edge
+  if (CONFIG.officeLabel) el('div', '', $('top'), CONFIG.officeLabel).id = 'org';
 
   function skyPhoto() {
     var bg = background(Date.now());

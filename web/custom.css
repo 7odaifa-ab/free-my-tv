@@ -82,7 +82,9 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 /* The clock: a greeting, the time with ص/م and the colon in the accent, then the dates and the next prayer */
 .office #clock { left: 80px; top: 44px; font-size: 16px; font-weight: 400; letter-spacing: 0; line-height: normal; }
 .rtl.office #clock { left: auto; right: 80px; }
-.office #clock .org { margin-bottom: 10px; font-size: 26px; font-weight: 500; color: #61553E; white-space: nowrap; }
+.office #org { position: absolute; top: 56px; left: 80px; height: 62px; line-height: 62px; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 34px; font-weight: 700; color: #0C233F; white-space: nowrap; }
+.rtl.office #org { left: auto; right: 80px; }
+.night.office #org { color: #F6EFE0; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); }
 .office #clock .greet { font-size: 30px; font-weight: 500; color: #8D7A59; }
 .office #clock .time { direction: ltr; unicode-bidi: bidi-override; margin-top: 4px; font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 190px; font-weight: 700; line-height: 1; white-space: nowrap; color: #0C233F; }
 .rtl.office #clock .time { text-align: right; }
@@ -90,10 +92,10 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #clock .time .ap { font-size: 0.3em; font-weight: 500; margin: 0 0.2em; color: #8D7A59; }
 .office #clock .date { display: block; margin-top: 14px; font-size: 30px; font-weight: 400; color: #61553E; white-space: nowrap; }
 .office #clock .next { margin-top: 8px; font-size: 28px; font-weight: 500; color: #2F6F66; white-space: nowrap; }
-.office #clock .org:empty, .office #clock .greet:empty, .office #clock .next:empty { display: none; }
+.office #clock .greet:empty, .office #clock .next:empty { display: none; }
 .night.office #clock .greet, .night.office #clock .time .sep, .night.office #clock .time .ap, .night.office #clock .next { color: #DCB86F; }
 .night.office #clock .time { color: #FFFDF6; text-shadow: 0 4px 60px rgba(0, 0, 0, 0.55); }
-.night.office #clock .date, .night.office #clock .org { color: #D8CDB6; }
+.night.office #clock .date { color: #D8CDB6; }
 
 /* Today's prayers, under the buttons */
 
@@ -161,7 +163,7 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #top, .office.drawer-open #top { opacity: 1; }
 .office #drawer, .office.drawer-open #drawer { -webkit-transform: none; transform: none; opacity: 1; }
 .office.drawer-open #sky .lift { opacity: 0; }
-.office #clock { display: block; top: 52px; }
+.office #clock { display: block; top: 238px; }   /* halfway between the pills' row (118 px) and the prayer line (640 px) */
 
 .office .row-title { top: 806px; font-size: 22px; font-weight: 500; }
 .office #drawer .key { top: 846px; height: 150px; border-radius: 22px; }
