@@ -63,7 +63,10 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-01 | `9ef3adb` | Our layer moved out of main's files (`custom.js`, `custom.css`, `prayer.js`, `custom_build.py`). |
 | 2026-11-01 | `0115142`, `519cbe9` | The office's name on the pills' row, the clock centred, the prayer line above the row, the logo clear of YouTube, no prayer grid on the screensaver. |
 | 2026-11-01 | `70950dd` | The office's own photos as backgrounds, softened for both looks. |
-| 2026-11-01 | (this commit) | A stronger logo, the office's app icon and banner, this document. |
+| 2026-11-01 | `9fe0e99` | A stronger logo, the office's app icon and banner, this document. |
+| 2026-11-01 | `e3ba20b` | The office's name on the screensaver, under the logo (rejected the same day, see 6.9). |
+| 2026-11-01 | `31f95a4` | The screensaver's office name moved to the start edge, just above the prayer line. |
+| 2026-11-01 | (this commit) | This document: the rotation timing, the design iterations (6.9), the image processing in detail. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -170,19 +173,63 @@ packs `web/` plus `custom_build.files()` (photos, fonts, logo), adds the icon, a
 - **What:** the office's 15 photos (`web/backgrounds/AlAhyaa/`, drone and ground shots of the centre), prepared by
   `tools/office_photos.py`: 1920 wide, saturation 0.6, Gaussian blur 3 px, JPEG 82 (100-180 KB each instead of
   10-27 MB). For each photo it stores a "keep" factor (target middle brightness 85/255, between 0.55 and 1) that sets
-  the opacity of a dark layer over it. A new photo every 30 minutes, the same order on every TV. Falls back to the
-  Unsplash set when there are no own photos.
+  the opacity of a dark layer over it. Falls back to the Unsplash set when there are no own photos.
+- **Processing, step by step** (`tools/office_photos.py`, run once on the computer; the originals are never touched):
+  1. open the original and decode the JPEG at reduced size (`draft`), which is much faster for 27 MB files;
+  2. apply the camera's orientation (EXIF);
+  3. resize to 1920 px wide, keeping the aspect (3:2 photos are cropped by the screen's `cover`, centred at 30% from
+     the top);
+  4. lower the colour to 60% (`ImageEnhance.Color 0.6`): courts and pools were too saturated next to the brand's
+     muted palette;
+  5. blur 3 px (Gaussian): the photo stays recognisable but loses the fine detail that fought with the text;
+  6. measure the middle band's brightness (the middle 60% of the height, in grey) and store
+     `keep = 85 / brightness`, between 0.55 and 1. The app sets the dark layer to `1 - keep` (the sunniest photo,
+     DSC_5705, gets 0.45; the darkest, DSC_5052, 0.17);
+  7. save as progressive JPEG, quality 82, into `app/assets/backgrounds.local/`, with `backgrounds.json` listing
+     `[name, keep]`.
+  First try (resize and darken only, target 95) was readable on calm photos but not on the drone shots: text, the
+  prayer line and the logo got lost. Adding steps 4-5 and lowering the target to 85 fixed it in both looks.
+- **Rotation:** a new photo every 30 minutes, on the clock (:00 and :30), chosen as `floor(time / 30 min) mod 15`, so
+  every TV shows the same photo at the same time and nothing is stored. 15 photos make a 7.5-hour cycle; a day has 48
+  half hours, which 15 doesn't divide, so the order moves on by 3 photos each day and a given hour doesn't always get
+  the same photo. The change is a 1.2 s cross-fade. The screensaver checks every minute but shows the same half-hour
+  photo as the home screen.
 - **Kept as before:** the veil gradients (dark at night, cream by day) over the photo.
 - **Why:** the photos are bright, sunny and busy (courts, pools); raw, they drowned the text and the logo.
 - **Benefit:** the centre's own places on screen, in both looks, with no cost on the TV (the softening is done once on
   the computer).
 
 ### 6.6 Screensaver (UrTV's layout)
-- **What:** dates and weather on top, a 300 px clock with "بتوقيت جدة", the logo at the end edge, a bottom line of next
-  prayer, next occasion and the next three days' weather. Photos cross-fade with a 60 s settle (no endless motion).
+- **What:** dates and weather on top, a 300 px clock with "• بتوقيت جدة" centred under it (the gold dot on the
+  right, before the words, as Arabic reads; checked on the TV), the logo at the end edge (640 x 604, opacity 0.5), the
+  office's name at the start edge just above the bottom line (Thmanyah Display 30 px bold, cream with a soft shadow),
+  and a bottom line of next prayer, next occasion and the next three days' weather. Photos cross-fade with a 60 s settle (no endless motion).
 - **Burn-in care:** everything moves a few pixels every 4 minutes along a 7-step path; a black dimmer rises from 9 pm
   to 0.46 at 11 pm, held until 5 am, gone by 7 am.
 - **Removed:** today's prayer grid (2026-11-01), on request.
+
+### 6.9 How the experience changed, step by step
+
+What was tried, what the office said, and what stayed. Kept so we don't go back to what was already rejected.
+
+| Area | First | Then | Now (why) |
+|---|---|---|---|
+| Overall look | Main's look in Arabic, palette colours | UrTV's look rebuilt | Office layout (no shelf, no drawer, no live TV): the TV is for HDMI, mirroring, USB, YouTube. |
+| App shelf | Main's shelf | Shelf hidden but drawer floating | None: one row of HDMI 1, Mirroring, USB, Home Settings, YouTube small. |
+| HDMI | All four listed ports (one dead) | The three real ports | HDMI 1 only: the office uses one. |
+| Prayer times on home | A box of the five prayers | Removed | Only the next prayer, in a line (less to read, still useful). |
+| Prayer/occasion line | Under the clock, mid-screen (440 px) | — | Just above the row (640 px): reads with the row, frees the middle for the photo. |
+| Clock | Top start corner (52 px) | Pushed down by the name above it | Centred between the top row and the prayer line (238 px; 120 px gap each side). |
+| Clock style | Plain digits | ص/م and colon in gold, digits Thmanyah Display | Same; ص/م kept on the correct side with bidi-override. |
+| Office name | None | 26 px line above the greeting, inside the clock block | 34 px bold on the pills' row, same 62 px height: the screen's title, in line with the buttons. |
+| Logo (home) | Top corner | Bottom corner, 780 x 736, with padding; YouTube's key sat on it | Above the row at the end edge, 510 x 480. |
+| Logo opacity | 0.28 day / 0.2 night | Too faint on the office's photos | 0.62 day / 0.55 night; 0.5 on the screensaver. |
+| Screensaver prayers | A 3 x 2 grid of today's prayers | Removed | The logo takes its place; the next prayer stays in the bottom line. |
+| Screensaver name | None | Under the logo, centred (rejected: crowded, read as part of the logo) | Start edge, above the prayer line. |
+| Backgrounds | Unsplash landscapes | Office photos, raw (too busy) | Office photos softened (6.5). |
+| Light look | Light text on a light veil (broken) | — | Navy text, brown accents; YouTube's key navy so its white letters show. |
+| Focus | Invisible at night | — | Cream + gold ring at night, navy + brown ring by day, scale 1.08. |
+| Speed | Slow focus moves | — | Only transform animates; logo as PNG; photos at screen size. |
 
 ### 6.7 Two looks, one design
 - **What:** dark (cream text, gold accents) and light (navy text, brown accents) with the same layout, photo and
