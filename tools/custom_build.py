@@ -13,12 +13,15 @@ The person's brand, used when it's there and never in a --generic build (git ign
   app/assets/fonts/thmanyah/*.woff2   Thmanyah Sans and Serif Display
   app/assets/logo-corner.png          the logo, at the size it shows (780 x 736)
   tizen/icon.local.png                the Samsung package's icon (tizen/build.py)
+  app/assets/backgrounds.local/       the office's own photos, instead of web/backgrounds (tools/office_photos.py)
 """
+import json
 import os
 import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OWN_PHOTOS = os.path.join(ROOT, 'app', 'assets', 'backgrounds.local')
 
 
 def hijri_offset(v):
@@ -28,6 +31,15 @@ def hijri_offset(v):
     return int(v)
 
 
+def own_photos():
+    """The office's own photos and how bright each may stay ([[name, keep]]), or None."""
+    listed = os.path.join(OWN_PHOTOS, 'backgrounds.json')
+    if not os.path.exists(listed):
+        return None
+    with open(listed, encoding='utf-8') as f:
+        return json.load(f) or None
+
+
 def settings(values, generic=False):
     """The extra settings for config.js, from config.properties' values ({} and generic for a --generic build)."""
     return {
@@ -35,6 +47,7 @@ def settings(values, generic=False):
         'prayerTimes': values.get('prayer_times', 'false').lower() == 'true',
         'hijriOffset': hijri_offset(values.get('hijri_offset', '') or '0'),
         'officeLabel': values.get('office_label', '').strip(),
+        'backgrounds': own_photos() if not generic else None,
         'generic': generic,
     }
 
@@ -43,10 +56,10 @@ def files(out, config):
     """Adds the office layout's photos, and the person's fonts and logo, to the app's files ({path: bytes})."""
     if config.get('homeLayout') != 'office':
         return
-    web = os.path.join(ROOT, 'web', 'backgrounds')
+    web = OWN_PHOTOS if config.get('backgrounds') else os.path.join(ROOT, 'web', 'backgrounds')
     for name in sorted(os.listdir(web)):
-        if not os.path.isfile(os.path.join(web, name)):
-            continue   # a folder of photos kept there for later
+        if not name.lower().endswith('.jpg') or not os.path.isfile(os.path.join(web, name)):
+            continue   # only the photos
         with open(os.path.join(web, name), 'rb') as f:
             out['backgrounds/' + name] = f.read()
     if config.get('generic'):

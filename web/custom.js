@@ -105,8 +105,9 @@ window.FreeMyTVCustom = function (h) {
 
   // MARK: - Background: a Saudi landscape, and the person's logo
 
-  // web/backgrounds (Unsplash), each with how bright it may stay so text reads on it.
-  var BACKGROUNDS = [['9hWJs7iblh8', 0.9], ['XDtzu1D2P8c', 0.84], ['t3dlLOhdEzs', 0.99], ['LAj90eAXOZA', 0.96], ['f5ZB0LHwi0s', 0.88]];
+  // The office's own photos (tools/office_photos.py), else web/backgrounds (Unsplash); each with how bright it may stay
+  // so text reads on it.
+  var BACKGROUNDS = CONFIG.backgrounds || [['9hWJs7iblh8', 0.9], ['XDtzu1D2P8c', 0.84], ['t3dlLOhdEzs', 0.99], ['LAj90eAXOZA', 0.96], ['f5ZB0LHwi0s', 0.88]];
 
   /** The photo for this half hour: a new one every 30 minutes, the same on every TV. */
   function background(at) { return BACKGROUNDS[Math.floor(at / 1800000) % BACKGROUNDS.length]; }
