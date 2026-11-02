@@ -80,3 +80,13 @@ def icon(default):
     """The Samsung package's icon: tizen/icon.local.png when the person made one, else main's."""
     own = os.path.join(ROOT, 'tizen', 'icon.local.png')
     return own if os.path.exists(own) else default
+
+
+def manifest(data, config):
+    """The Samsung package's config.xml: the office layout reads USB drives itself (Samsung's USB app doesn't open from
+    a developer app on Tizen 9), and reads the Wi-Fi's name for the mirroring card."""
+    if (config or {}).get('homeLayout') != 'office':
+        return data
+    extra = ''.join('    <tizen:privilege name="http://tizen.org/privilege/%s"/>\n' % p
+                    for p in ('filesystem.read', 'mediastorage', 'externalstorage', 'network.get'))
+    return data.replace(b'    <tizen:profile', extra.encode() + b'    <tizen:profile', 1)

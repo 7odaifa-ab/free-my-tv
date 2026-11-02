@@ -231,3 +231,37 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
    nothing to draw, and without it the focus is hard to see from across a room. */
 .flat .night.office #drawer .key.focus, .flat .night.office .pill.focus { box-shadow: 0 0 0 4px #DCB86F !important; }
 .flat .office:not(.night) #drawer .key.focus, .flat .office:not(.night) .pill.focus { box-shadow: 0 0 0 4px #8D7A59 !important; }
+
+/* How-to cards: screen mirroring and USB (Samsung's own apps don't open from here on Tizen 9) */
+.office #guide { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: rgba(6, 18, 33, 0.72); opacity: 0; pointer-events: none; -webkit-transition: opacity 0.25s; transition: opacity 0.25s; z-index: 50; }
+.office #guide.on { opacity: 1; }
+.office #guide .g-card { position: absolute; left: 160px; right: 160px; top: 200px; padding: 56px 64px; border-radius: 40px; background: #F6EFE0; color: #0C233F; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); }
+.office #guide .g-title { font-family: 'ThmanyahDisplay', 'Thmanyah', 'Inter', sans-serif; font-size: 56px; font-weight: 700; }
+.office #guide .g-note { margin-top: 14px; font-size: 30px; font-weight: 700; color: #2F6F66; }
+.office #guide .g-cols { margin-top: 40px; overflow: hidden; }
+.office #guide .g-col { float: left; width: 31%; margin-left: 3%; }
+.rtl.office #guide .g-col { float: right; margin-left: 0; margin-right: 3%; }
+.office #guide .g-col:first-child { margin-left: 0; margin-right: 0; }
+.office #guide .g-head { font-size: 36px; font-weight: 700; color: #8D7A59; margin-bottom: 16px; }
+.office #guide .g-step { font-size: 29px; line-height: 1.5; }
+.office #guide .g-hint { margin-top: 44px; font-size: 24px; color: #61553E; }
+
+/* USB: our own viewer of the drive's folders, photos and videos */
+.office #usb, .office #usbview { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; z-index: 60; }
+.office #usb.on, .office #usbview.on { display: block; }
+.office #usb { background: #0C233F; color: #F6EFE0; }
+.office #usb .u-path { position: absolute; top: 56px; left: 80px; right: 80px; font-size: 40px; font-weight: 700; }
+.office #usb .u-grid { position: absolute; top: 150px; left: 80px; right: 80px; -webkit-transition: -webkit-transform 0.2s; transition: transform 0.2s; }
+.office #usb .u-tile { float: left; width: 252px; height: 270px; margin: 0 24px 30px 0; border-radius: 24px; background: rgba(246, 239, 224, 0.08); border: 4px solid transparent; overflow: hidden; }
+.rtl.office #usb .u-tile { float: right; margin: 0 0 30px 24px; }
+.office #usb .u-tile.focus { border-color: #DCB86F; background: rgba(246, 239, 224, 0.18); }
+.office #usb .u-thumb { height: 190px; line-height: 190px; text-align: center; font-size: 80px; background: rgba(0, 0, 0, 0.25); overflow: hidden; }
+.office #usb .u-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.office #usb .u-name { padding: 14px 16px; font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.office #usb .u-empty { font-size: 34px; opacity: 0.8; }
+.office #usb .u-hint { position: absolute; bottom: 40px; left: 80px; right: 80px; font-size: 26px; opacity: 0.75; }
+.office #usbview { background: #000; z-index: 61; }
+.office #usbview img, .office #usbview video { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: contain; }
+.office #usbview .u-cap { position: absolute; bottom: 30px; left: 40px; font-size: 24px; color: rgba(255, 255, 255, 0.7); text-shadow: 0 2px 8px #000; }
+.office #usbview .u-mode { position: absolute; top: 40px; left: 50%; -webkit-transform: translate(-50%, 0); transform: translate(-50%, 0); padding: 16px 32px; border-radius: 32px; background: rgba(12, 35, 63, 0.85); color: #F6EFE0; font-size: 30px; font-weight: 700; white-space: nowrap; opacity: 0; -webkit-transition: opacity 0.3s; transition: opacity 0.3s; }
+.office #usbview .u-mode.on { opacity: 1; }

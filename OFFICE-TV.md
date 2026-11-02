@@ -66,7 +66,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-01 | `9fe0e99` | A stronger logo, the office's app icon and banner, this document. |
 | 2026-11-01 | `e3ba20b` | The office's name on the screensaver, under the logo (rejected the same day, see 6.9). |
 | 2026-11-01 | `31f95a4` | The screensaver's office name moved to the start edge, just above the prayer line. |
-| 2026-11-01 | (this commit) | This document: the rotation timing, the design iterations (6.9), the image processing in detail. |
+| 2026-11-01 | `8178d20` | This document: the rotation timing, the design iterations (6.9), the image processing in detail. |
+| 2026-11-02 | (this commit) | Screen Mirroring opens a how-to card; USB opens our own viewer of the drive, with repeat modes (6.10). |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -208,6 +209,40 @@ packs `web/` plus `custom_build.files()` (photos, fonts, logo), adds the icon, a
   to 0.46 at 11 pm, held until 5 am, gone by 7 am.
 - **Removed:** today's prayer grid (2026-11-01), on request.
 
+### 6.10 Screen Mirroring and USB
+
+**What happened.** Both keys opened nothing on this TV (Tizen 9). Samsung's apps (`org.tizen.ScreenMirroring-app-tv`,
+`com.samsung.tv.mycontents`) are listed, and `tizen.application.launch` answers *success*, but nothing comes to the
+front. We tried, one at a time with a 1.5 s check of `document.hidden`: `launch`, `launchAppControl` with the default
+operation, the TV's REST API (`POST 127.0.0.1:8001/api/v2/applications/<id>`), and every related id the TV lists
+(`ContentsBrowser`, `coba.source.StorageShare`, `usb-launcher-tv`, `home.media`, `SMSourceAPP`, `happycast-service`).
+All failed. A drive (a SanDisk *Cruzer Blade*) shows in Samsung's own source menu, but not in `VIDEOSOURCE`, so
+`tvwindow.setSource` can't reach it either.
+
+**Screen Mirroring → a how-to card** (`mirrorGuide` in `custom.js`, `#guide` in `custom.css`). Mirroring starts from
+the laptop or phone, not the TV, so the key explains how, in three columns: Windows (Windows + K), Mac (Control Center →
+Screen Mirroring; AirPlay 2, which 2018+ Samsungs have) and iPhone/Android. A line on top says the device must be on the
+same network as the TV. It names the TV as set in its settings (read from `GET 127.0.0.1:8001/api/v2/` → `device.name`)
+and the Wi-Fi's name (`systeminfo` `WIFI_NETWORK`), which is left out when the TV is on a cable, as this one is. OK or
+Back closes it. The card's classes are prefixed `g-`: plain names (`title`, `step`) took main's styles and overlapped.
+
+**USB → our own viewer** (`openUsb` … `usbBack` in `custom.js`, `#usb`, `#usbview` in `custom.css`).
+- `tizen.filesystem.listStorages` finds the mounted `EXTERNAL` drive; its folders, photos and videos show as a grid of
+  6 columns (folders first, then by name; hidden files and other types left out). Thumbnails load only for the rows
+  near the focus, since a camera's card can hold hundreds of photos.
+- OK opens a folder, a photo (full screen, `contain`) or a video (HTML5 `<video>`). In a photo, ← → move to the
+  previous or next file. In a video, OK pauses or plays, and ← → skip 10 s. Back closes the file, then goes up a
+  folder, then leaves.
+- **Repeat modes** (▲ ▼ inside the viewer, shown for 3 s, remembered in `localStorage` `officeUsbMode`): *play once
+  and close*, *repeat the file*, or *play the folder on repeat*. That last one goes through the folder's photos and
+  videos, round to the start; photos stay 8 s each, as a slideshow. It suits a screen left playing in the office.
+- **Privileges:** `filesystem.read`, `mediastorage`, `externalstorage` and `network.get`. They are added to
+  `config.xml` at build time by `custom_build.manifest()`, only for `home_layout=office`, so main's `tizen/config.xml`
+  is unchanged. `tizen/build.py` got a one-line hook for it.
+- **Alternative if a format won't play:** community players such as Tessel or Beam-TV
+  (github.com/Apps2Samsung/tizen-community-packages) play more formats and subtitles. The USB key could open one of
+  them instead.
+
 ### 6.9 How the experience changed, step by step
 
 What was tried, what the office said, and what stayed. Kept so we don't go back to what was already rejected.
@@ -320,6 +355,7 @@ preview, install).
 | Logo under YouTube | Logo bottom corner, 736 px tall | Logo above the row, 480 px tall. |
 | Build crash risk | A folder inside `web/backgrounds` | Only `.jpg` files are packed. |
 | YouTube letters invisible in the light look | White logo on a white key | That key is navy in the light look. |
+| USB and Screen Mirroring keys did nothing | Tizen 9 won't bring Samsung's own apps up from a developer app (launch answers success) | Mirroring: a how-to card. USB: our own viewer (6.10). |
 
 ## 11. Ideas and plan
 

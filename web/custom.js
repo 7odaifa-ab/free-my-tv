@@ -166,6 +166,252 @@ window.FreeMyTVCustom = function (h) {
   window.addEventListener('online', netPill);
   window.addEventListener('offline', netPill);
 
+  // MARK: - How-to cards (mirroring, USB)
+
+  // Samsung's mirroring and USB apps can't be opened from a developer app on Tizen 9 (launch answers success and
+  // nothing comes up, for every id the TV lists), so these keys show how to do it instead.
+  var guideOn = false, tvName = '', wifiName = '';
+
+  /** The name given to the TV in its settings (General, System Manager, Device Name), from its own REST API. */
+  function loadTvName(done) {
+    if (tvName) { done(); return; }
+    try {
+      var x = new XMLHttpRequest();
+      x.open('GET', 'http://127.0.0.1:8001/api/v2/', true);
+      x.timeout = 3000;
+      x.onreadystatechange = function () {
+        if (x.readyState !== 4) return;
+        try { tvName = JSON.parse(x.responseText).device.name || ''; } catch (e) {}
+        try {
+          window.tizen.systeminfo.getPropertyValue('WIFI_NETWORK', function (w) { wifiName = w && w.ssid || ''; done(); }, done);
+        } catch (e) { done(); }
+      };
+      x.send();
+    } catch (e) { done(); }
+  }
+
+  function showGuide(title, sections, note) {
+    var g = $('guide') || el('div', '', body);
+    g.id = 'guide';
+    g.innerHTML = '';
+    var card = el('div', 'g-card', g);
+    el('div', 'g-title', card, title);
+    if (note) el('div', 'g-note', card, note);
+    var cols = el('div', 'g-cols', card);
+    for (var i = 0; i < sections.length; i++) {
+      var c = el('div', 'g-col', cols);
+      el('div', 'g-head', c, sections[i][0]);
+      for (var j = 1; j < sections[i].length; j++) el('div', 'g-step', c, sections[i][j]);
+    }
+    el('div', 'g-hint', card, 'اضغط رجوع أو موافق للإغلاق');
+    guideOn = true;
+    setClass(g, 'on', true);
+  }
+
+  function hideGuide() {
+    guideOn = false;
+    if ($('guide')) setClass($('guide'), 'on', false);
+  }
+
+  function mirrorGuide() {
+    loadTvName(function () {
+      var name = tvName ? '«' + tvName + '»' : 'هذا التلفزيون';
+      showGuide('مشاركة الشاشة', [
+        ['ويندوز', '١. اضغط مفتاح Windows + K', '٢. اختر ' + name + ' من القائمة', '٣. وافق على الطلب في التلفزيون إن ظهر'],
+        ['ماك', '١. افتح مركز التحكم أعلى الشاشة', '٢. اضغط «انعكاس الشاشة» (Screen Mirroring)', '٣. اختر ' + name],
+        ['آيفون وأندرويد', 'آيفون: مركز التحكم ← انعكاس الشاشة', 'أندرويد: الإعدادات السريعة ← Smart View', 'ثم اختر ' + name]
+      ], 'يجب أن يكون الجهاز والتلفزيون متصلين بنفس الشبكة' + (wifiName ? ': ' + wifiName : '') + (tvName ? '  ·  اسم التلفزيون: ' + tvName : ''));
+    });
+  }
+
+  // MARK: - USB: our own viewer
+
+  // The drive isn't one of the TV's video sources and Samsung's USB app doesn't open from a developer app on Tizen 9,
+  // so the key opens the drive here: its folders, photos and videos (tizen.filesystem; the privileges are added at build
+  // time by tools/custom_build.py). OK opens, the arrows move, Back goes up a folder, then out.
+  var PHOTO = /\.(jpe?g|png|gif|bmp|webp)$/i, VIDEO = /\.(mp4|m4v|mov|mkv|avi|webm|ts|3gp)$/i, USB_COLS = 6;
+  var usb = null;   // {stack: [folders], list: [{name, kind, file}], at, view: '' | 'photo' | 'video'}
+  // What happens when a video ends (▲ ▼ in the viewer change it; this TV remembers it): close, play it again, or go on
+  // through the folder's photos and videos and start over (photos stay SLIDE ms each, as a slideshow).
+  var MODES = [['once', 'تشغيل مرة ثم إغلاق'], ['one', 'تكرار الملف'], ['all', 'تشغيل المجلد بالتكرار']], SLIDE = 8000;
+  var usbMode = 0, slideTimer = 0, modeTimer = 0;
+  try { usbMode = Math.max(0, Math.min(2, +localStorage.getItem('officeUsbMode') || 0)); } catch (e) {}
+
+  /** The next photo or video after `from` (dx 1) or before it (dx -1), round the folder; -1 when there's none. */
+  function usbNext(from, dx) {
+    var n = usb.list.length;
+    for (var k = 1; k <= n; k++) {
+      var i = ((from + dx * k) % n + n) % n;
+      if (usb.list[i].kind !== 'dir') return i;
+    }
+    return -1;
+  }
+
+  function usbAdvance() {
+    var i = usbNext(usb.at, 1);
+    if (i < 0) { usbCloseView(); return; }
+    usb.at = i;
+    usbShow();
+  }
+
+  function showMode() {
+    var v = $('usbview'), m = v && v.querySelector('.u-mode');
+    if (!m) return;
+    m.textContent = '▲▼  ' + MODES[usbMode][1];
+    setClass(m, 'on', true);
+    clearTimeout(modeTimer);
+    modeTimer = setTimeout(function () { setClass(m, 'on', false); }, 3000);
+  }
+
+  function openUsb() {
+    var toast = window.FreeMyTV.toast;
+    try {
+      window.tizen.filesystem.listStorages(function (all) {
+        for (var i = 0; i < all.length; i++) {
+          if (all[i].type === 'EXTERNAL' && all[i].state === 'MOUNTED') {
+            window.tizen.filesystem.resolve(all[i].label, function (dir) {
+              usb = {stack: [dir], list: [], at: 0, view: ''};
+              usbList();
+            }, function (e) { toast('USB: ' + e.name); }, 'r');
+            return;
+          }
+        }
+        toast('وصّل فلاش USB بالتلفزيون أولاً');
+      }, function (e) { toast('USB: ' + e.name); });
+    } catch (e) { toast('USB: ' + e.name); }
+  }
+
+  function usbList() {
+    usb.stack[usb.stack.length - 1].listFiles(function (files) {
+      var list = [];
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i], n = f.name;
+        if (n.charAt(0) === '.') continue;
+        var kind = f.isDirectory ? 'dir' : PHOTO.test(n) ? 'photo' : VIDEO.test(n) ? 'video' : '';
+        if (kind) list.push({name: n, kind: kind, file: f});
+      }
+      list.sort(function (x, y) { return (x.kind === 'dir' ? 0 : 1) - (y.kind === 'dir' ? 0 : 1) || (x.name < y.name ? -1 : 1); });
+      usb.list = list;
+      usb.at = 0;
+      usbDraw();
+    }, function (e) { window.FreeMyTV.toast('USB: ' + e.name); });
+  }
+
+  function usbDraw() {
+    var u = $('usb') || el('div', '', body);
+    u.id = 'usb';
+    u.innerHTML = '';
+    setClass(u, 'on', true);
+    var path = [];
+    for (var i = 0; i < usb.stack.length; i++) path.push(i ? usb.stack[i].name : 'USB');
+    el('div', 'u-path', u, path.join('  ›  '));
+    var grid = el('div', 'u-grid', u);
+    if (!usb.list.length) el('div', 'u-empty', grid, 'لا توجد صور أو فيديوهات هنا');
+    for (var k = 0; k < usb.list.length; k++) {
+      var it = usb.list[k], t = el('div', 'u-tile', grid);
+      // Only the first rows' photos load now: a drive can hold hundreds of camera photos
+      if (it.kind === 'photo') { var img = el('img', '', el('div', 'u-thumb', t)); if (k < USB_COLS * 3) img.src = it.file.toURI(); }
+      else el('div', 'u-thumb', t, it.kind === 'dir' ? '📁' : '▶');
+      el('div', 'u-name', t, it.name);
+    }
+    el('div', 'u-hint', u, 'موافق للفتح  ·  ▲▼ داخل العرض لاختيار التكرار  ·  رجوع للخلف');
+    usbScroll();
+  }
+
+  function usbScroll() {
+    var grid = $('usb').querySelector('.u-grid'), tiles = grid.querySelectorAll('.u-tile');
+    var row = Math.floor(usb.at / USB_COLS);
+    for (var i = 0; i < tiles.length; i++) {
+      setClass(tiles[i], 'focus', i === usb.at);
+      var img = tiles[i].querySelector('img');
+      if (img && !img.src && Math.floor(i / USB_COLS) <= row + 2) img.src = usb.list[i].file.toURI();
+    }
+    grid.style.webkitTransform = grid.style.transform = 'translateY(' + (-Math.max(0, row - 1) * 300) + 'px)';
+  }
+
+  function usbShow() {
+    var it = usb.list[usb.at], v = $('usbview') || el('div', '', body);
+    v.id = 'usbview';
+    v.innerHTML = '';
+    setClass(v, 'on', true);
+    clearTimeout(slideTimer);
+    if (it.kind === 'photo') {
+      usb.view = 'photo';
+      el('img', '', v).src = it.file.toURI();
+      if (MODES[usbMode][0] === 'all') slideTimer = setTimeout(usbAdvance, SLIDE);
+    } else {
+      usb.view = 'video';
+      var vid = el('video', '', v);
+      vid.src = it.file.toURI();
+      vid.autoplay = true;
+      vid.onended = function () {
+        var mode = MODES[usbMode][0];
+        if (mode === 'one') { vid.currentTime = 0; vid.play(); }
+        else if (mode === 'all') usbAdvance();
+        else usbCloseView();
+      };
+    }
+    el('div', 'u-cap', v, it.name);
+    el('div', 'u-mode', v);
+    showMode();
+  }
+
+  function usbCloseView() {
+    clearTimeout(slideTimer);
+    var v = $('usbview');
+    if (v) {
+      var vid = v.querySelector('video');
+      if (vid) { vid.pause(); vid.removeAttribute('src'); vid.load(); }
+      v.innerHTML = '';
+      setClass(v, 'on', false);
+    }
+    usb.view = '';
+    usbScroll();
+  }
+
+  function usbMove(dx, dy) {
+    var n = usb.list.length, vid;
+    if (usb.view && dy) {
+      usbMode = (usbMode + (dy > 0 ? 1 : MODES.length - 1)) % MODES.length;
+      try { localStorage.setItem('officeUsbMode', usbMode); } catch (e) {}
+      if (usb.view === 'photo') usbShow(); else showMode();
+      return;
+    }
+    if (usb.view === 'video') {
+      vid = $('usbview').querySelector('video');
+      if (vid && dx) vid.currentTime = Math.max(0, vid.currentTime + dx * 10);   // ← → skip 10 s
+      return;
+    }
+    if (!n) return;
+    if (usb.view === 'photo') {
+      var i = dx ? usbNext(usb.at, dx) : -1;
+      if (i >= 0) { usb.at = i; usbShow(); }
+      return;
+    }
+    usb.at = Math.max(0, Math.min(n - 1, usb.at + dx + dy * USB_COLS));
+    usbScroll();
+  }
+
+  function usbOk() {
+    if (usb.view === 'video') {
+      var vid = $('usbview').querySelector('video');
+      if (vid) { if (vid.paused) vid.play(); else vid.pause(); }
+      return;
+    }
+    if (usb.view === 'photo') { usbCloseView(); return; }
+    var it = usb.list[usb.at];
+    if (!it) return;
+    if (it.kind === 'dir') { usb.stack.push(it.file); usbList(); } else usbShow();
+  }
+
+  function usbBack() {
+    if (usb.view) { usbCloseView(); return; }
+    if (usb.stack.length > 1) { usb.stack.pop(); usbList(); return; }
+    usb = null;
+    var u = $('usb');
+    if (u) { u.innerHTML = ''; setClass(u, 'on', false); }
+  }
+
   // MARK: - The row along the bottom
 
   function drawer(d) {
@@ -175,9 +421,9 @@ window.FreeMyTVCustom = function (h) {
       // One HDMI is all this office uses: the first port the TV has.
       if (inputs[i].key !== 'live') { items.push({label: inputs[i].label, symbol: inputs[i].symbol, run: h.launcher(inputs[i].id, inputs[i].label)}); break; }
     }
-    if (tvHas(MIRROR)) items.push({label: tr('Screen Mirroring'), symbol: 'cast', run: h.launcher(MIRROR, tr('Screen Mirroring'))});
+    if (tvHas(MIRROR)) items.push({label: tr('Screen Mirroring'), symbol: 'cast', run: mirrorGuide});
     var groupStart = items.length;
-    if (tvHas(USB)) items.push({label: 'USB', icon: 'icons/usb.svg', run: h.launcher(USB, 'USB')});
+    if (tvHas(USB)) items.push({label: 'USB', icon: 'icons/usb.svg', run: openUsb});
     items.push({label: tr('Home Settings'), symbol: 'settings', run: h.openSettings});
     var yt = null;
     for (i = 0; i < apps.length && !yt; i++) if (/youtube/i.test(apps[i].id + ' ' + apps[i].title) && !/kids|tv$|test/i.test(apps[i].id)) yt = apps[i];
@@ -273,6 +519,8 @@ window.FreeMyTVCustom = function (h) {
   }
 
   function move(dx, dy) {
+    if (guideOn) return true;
+    if (usb) { usbMove(dx, dy); return true; }
     if (st.zone === Z.DRAWER) {
       if (dx) st.drawer = Math.max(0, Math.min(items.length - 1, st.drawer + dx));
       else if (dy < 0) {
@@ -290,6 +538,8 @@ window.FreeMyTVCustom = function (h) {
   }
 
   function activate() {
+    if (guideOn) { hideGuide(); return true; }
+    if (usb) { usbOk(); return true; }
     if (st.zone !== Z.TOP) return false;   // the row's keys run as the drawer's
     PILLS[st.top - 3][0]();
     return true;
@@ -297,6 +547,8 @@ window.FreeMyTVCustom = function (h) {
 
   /** Back on this screen leaves the app, as on the home screen of the TV. */
   function back() {
+    if (guideOn) { hideGuide(); return true; }
+    if (usb) { usbBack(); return true; }
     if (st.zone !== Z.DRAWER && st.zone !== Z.TOP) return false;
     TV.back();
     return true;

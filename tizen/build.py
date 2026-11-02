@@ -72,6 +72,8 @@ def build(preview, config, profile):
             source = webapp.custom_build.icon(source)   # a fork's own icon, when it has one
         with open(source, 'rb') as f:
             app[name] = f.read()
+        if name == 'config.xml' and webapp.custom_build:
+            app[name] = webapp.custom_build.manifest(app[name], config)   # a fork's own privileges, when it needs some
 
     with zipfile.ZipFile(WGT, 'w', zipfile.ZIP_DEFLATED) as z:
         for path in sorted(app):
