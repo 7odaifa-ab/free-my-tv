@@ -118,6 +118,8 @@ window.FreeMyTVCustom = function (h) {
   sky.insertBefore(brand, sky.querySelector('.lift'));
   // The office's name, on the pills' row at the start edge
   if (CONFIG.officeLabel) el('div', '', $('top'), CONFIG.officeLabel).id = 'org';
+  // Who designed and built this screen, under Home Settings' box
+  if (CONFIG.credit) el('img', 'credit', $('settings')).src = 'credit.png';
 
   function skyPhoto() {
     var bg = background(Date.now());
@@ -152,7 +154,8 @@ window.FreeMyTVCustom = function (h) {
 
   var PILLS = [[h.showSaver, function (p) { h.sym('bedtime', p); return tr('Screensaver'); }],
     [networkSettings, function (p) { icon(p, netIcon()); return netLabel(); }],
-    [h.tvSettings, function (p) { h.sym('tv_settings', p); return tr('TV Settings'); }]];
+    // Home Settings here: the remote has its own button for the TV's settings
+    [h.openSettings, function (p) { h.sym('settings', p); return tr('Home Settings'); }]];
 
   function buttons(holder) {
     for (var b = 0; b < PILLS.length; b++) {
@@ -510,7 +513,8 @@ window.FreeMyTVCustom = function (h) {
     if (tvHas(MIRROR)) items.push({label: tr('Screen Mirroring'), symbol: 'cast', run: mirrorGuide});
     var groupStart = items.length;
     if (tvHas(USB)) items.push({label: 'USB', icon: 'icons/usb.svg', run: openUsb});
-    items.push({label: tr('Home Settings'), symbol: 'settings', run: h.openSettings});
+    // The TV's own home screen (Back no longer leaves this one; Home Settings are the pill on top)
+    items.push({label: 'الصفحة الرئيسية', symbol: 'home', run: function () { TV.back(); }});
     var yt = null;
     for (i = 0; i < apps.length && !yt; i++) if (/youtube/i.test(apps[i].id + ' ' + apps[i].title) && !/kids|tv$|test/i.test(apps[i].id)) yt = apps[i];
     if (yt) items.push({label: yt.title, small: true, run: h.launcher(yt.id, yt.title)});
@@ -635,10 +639,21 @@ window.FreeMyTVCustom = function (h) {
   function back() {
     if (guideOn) { hideGuide(); return true; }
     if (usb) { usbBack(); return true; }
-    if (st.zone !== Z.DRAWER && st.zone !== Z.TOP) return false;
-    TV.back();
-    return true;
+    // On this screen Back stays here (an office screen people shouldn't leave by accident); holding it leaves (below)
+    return st.zone === Z.DRAWER || st.zone === Z.TOP;
   }
+
+  // Back held for 2 s leaves to the TV's own home screen, from anywhere in the app: the way out when it's needed
+  var holdTimer = 0;
+  document.addEventListener('keydown', function (e) {
+    if (e.keyCode !== TV.keys.back || holdTimer) return;
+    holdTimer = setTimeout(function () { holdTimer = -1; TV.back(); }, 2000);
+  }, true);
+  document.addEventListener('keyup', function (e) {
+    if (e.keyCode !== TV.keys.back) return;
+    if (holdTimer > 0) clearTimeout(holdTimer);
+    holdTimer = 0;
+  }, true);
 
   // MARK: - Screensaver, in UrTV's layout
 

@@ -274,3 +274,6 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #usbview .u-fill { height: 8px; width: 0; background: #DCB86F; }
 .office #usbview .u-time { position: absolute; right: 28px; top: 0; line-height: 64px; font-size: 26px; white-space: nowrap; }
 .office #usbview .u-cap { top: 40px; bottom: auto; }
+
+/* Who built it: Zakhm's badge, under Home Settings' box */
+.office #settings .credit { position: absolute; left: 50%; bottom: 56px; height: 84px; -webkit-transform: translate(-50%, 0); transform: translate(-50%, 0); opacity: 0.85; }

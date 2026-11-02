@@ -76,7 +76,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `963679c` | Inside a photo or video, → is forward even in Arabic (home.js swaps the arrows for RTL). |
 | 2026-11-02 | `b24c809` | A second TV (10.0.0.53); profile `FreeMyTV2` signs for both. |
 | 2026-11-02 | `d414226` | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
-| 2026-11-02 | (this commit) | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
+| 2026-11-02 | `71853f2` | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
+| 2026-11-02 | (this commit) | Back stays on the home screen (held 2 s, it leaves); the bottom key is the TV's home screen; the top pill opens Home Settings; Zakhm's credit under Home Settings. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -260,6 +261,26 @@ Back closes it. The card's classes are prefixed `g-`: plain names (`title`, `ste
 - **Alternative if a format won't play:** community players such as Tessel or Beam-TV
   (github.com/Apps2Samsung/tizen-community-packages) play more formats and subtitles. The USB key could open one of
   them instead.
+
+### 6.11 Staying on this screen, and who built it
+
+- **Back** no longer leaves the home screen: it's an office screen, and a stray press shouldn't drop people into
+  Samsung's menus. Inside the USB viewer and the mirroring card, it still goes back one step. **Holding Back for 2 s**
+  leaves to Samsung's home screen from anywhere in the app: the way out when it's needed (a `keydown` timer, cancelled
+  by `keyup`).
+- **Home** can't be stopped: Samsung doesn't let any app take that key, and it always opens Samsung's home screen.
+  *Autorun Last App* brings our screen back when the TV turns on.
+- **The bottom row's Home Settings key is now «الصفحة الرئيسية»** (the `home` symbol): it opens Samsung's home
+  screen, as Back used to. Home Settings moved to the **top pill**, which used to open the TV's settings: the remote
+  has its own button for those. (A first try made the key *Exit*, with Home Settings on a long press of OK. It was
+  rejected: the user wanted a home key and a visible settings key.)
+- **Credit:** Zakhm's «طوّر بواسطة» badge (the white version, as in the Ayah platform's login page) sits under Home
+  Settings' box, centred, 84 px tall. Its source is `app/assets/credit.local.png` (git-ignored; copied from
+  `Ayah/apps/admin/public/POWERED-BY-White.png`). `custom_build.py` packs it as `credit.png` and sets
+  `CONFIG.credit`, never in a `--generic` build.
+- **The mute icon that comes and goes:** our code never touches sound (no audio API, no mute, no volume). The only
+  screensaver change is inside the app: while the USB viewer is open, our own idle timer is reset. So the icon comes
+  from the TV itself. Still open: which TV, and whether it happens only while muted.
 
 ### 6.9 How the experience changed, step by step
 

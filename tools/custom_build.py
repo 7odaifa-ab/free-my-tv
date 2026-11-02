@@ -21,6 +21,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CREDIT = os.path.join(ROOT, 'app', 'assets', 'credit.local.png')
 OWN_PHOTOS = os.path.join(ROOT, 'app', 'assets', 'backgrounds.local')
 
 
@@ -48,6 +49,7 @@ def settings(values, generic=False):
         'hijriOffset': hijri_offset(values.get('hijri_offset', '') or '0'),
         'officeLabel': values.get('office_label', '').strip(),
         'backgrounds': own_photos() if not generic else None,
+        'credit': not generic and os.path.exists(CREDIT),   # who made this build (Zakhm's badge), in Home Settings
         'generic': generic,
     }
 
@@ -70,6 +72,9 @@ def files(out, config):
             if name.endswith('.woff2'):
                 with open(os.path.join(fonts, name), 'rb') as f:
                     out['fonts/' + name] = f.read()
+    if config.get('credit'):
+        with open(CREDIT, 'rb') as f:
+            out['credit.png'] = f.read()
     logo = os.path.join(ROOT, 'app', 'assets', 'logo-corner.png')
     if os.path.exists(logo):
         with open(logo, 'rb') as f:

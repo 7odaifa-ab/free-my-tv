@@ -21,7 +21,7 @@ from main's files, so main's updates merge with little or nothing to fix.
 | `OFFICE-TV.md` | The full record: every change, why, what it gives, and the plan for what comes next. |
 
 Not in git (the person's brand, `.gitignore`): `app/assets/fonts/thmanyah/`, `app/assets/logo-corner.png`,
-`app/assets/backgrounds.local/`, `web/backgrounds/AlAhyaa/`, `tizen/icon.local.png` (a copy of `app/res/drawable-nodpi/icon.png`), and `config.properties`.
+`app/assets/backgrounds.local/`, `web/backgrounds/AlAhyaa/`, `app/assets/credit.local.png` (Zakhm's credit badge, shown under Home Settings), `tizen/icon.local.png` (a copy of `app/res/drawable-nodpi/icon.png`), and `config.properties`.
 
 ## Where main's files call ours (the only lines to check after a merge)
 
