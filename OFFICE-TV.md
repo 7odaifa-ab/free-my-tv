@@ -29,9 +29,10 @@ What it shows:
 | TV | Samsung UA65CU7000UXSA, 2023, Tizen 9.0, 65", 1920 x 1080 UI, 3 HDMI ports |
 | TV IP | 10.0.0.52 |
 | Second TV | Samsung UA55CU7000UXSA, 2023, Tizen 9.0, 55", at 10.0.0.53 (added 2026-11-02) |
+| Third TV | Samsung UA98DU9000UXSA, 2024, 98", at 10.0.0.51 (added 2026-11-02) |
 | City | Jeddah (21.4858, 39.1925), time zone Asia/Riyadh |
 | Computer | Windows 11, IP 10.0.0.172 (was 10.0.0.190; the TV's *Host PC IP* must match the current one) |
-| Signing | Samsung certificate profile `FreeMyTV2`: the same author certificate as the first profile `FreeMyTV`, and a new distributor certificate listing both TVs' DUIDs. Made with tizen-agent-skills' certificate manager (`generate-samsung-distributor --duid-file`, `create-samsung-profile`); the password was typed by the user, and the Samsung sign-in happened in the browser. Keeping the author certificate let the first TV take the update without uninstalling. A third TV needs a new distributor certificate with all the DUIDs (`0 getduid` over SDB reads each one). |
+| Signing | Samsung certificate profile `FreeMyTV3`: the same author certificate as the first profile `FreeMyTV`, and a distributor certificate listing all three TVs' DUIDs (`FreeMyTV2` covered the first two). Made with tizen-agent-skills' certificate manager (`generate-samsung-distributor --duid-file`, `create-samsung-profile`); the password was typed by the user, and the Samsung sign-in happened in the browser. Keeping the author certificate let the first TV take the update without uninstalling. A third TV needs a new distributor certificate with all the DUIDs (`0 getduid` over SDB reads each one). |
 | Tizen tools | `~/tizen-sdk` (CLI in `~/tizen-sdk/tools/ide/bin`) |
 
 Developer mode on the TV: *Apps* → `1 2 3 4 5` (on a remote without numbers, the on-screen number pad) → Developer mode
@@ -73,7 +74,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `a2f542b` | No screensaver while the USB viewer is open (`h.idle`, a one-line hook in home.js). |
 | 2026-11-02 | `222b202` | USB viewer: resume, a progress bar, auto-play when a drive is plugged in, a message for formats the TV can't play. |
 | 2026-11-02 | `963679c` | Inside a photo or video, → is forward even in Arabic (home.js swaps the arrows for RTL). |
-| 2026-11-02 | (this commit) | A second TV (10.0.0.53); profile `FreeMyTV2` signs for both. |
+| 2026-11-02 | `b24c809` | A second TV (10.0.0.53); profile `FreeMyTV2` signs for both. |
+| 2026-11-02 | (this commit) | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -333,7 +335,8 @@ which is never pushed; they must never go into `pr/arabic-rtl` or any pull reque
 **Build and install**
 
 ```bash
-python tizen/build.py --sign FreeMyTV2
+python tizen/build.py --sign FreeMyTV3
+python tizen/install.py 10.0.0.51
 python tizen/install.py 10.0.0.52
 python tizen/install.py 10.0.0.53
 ```
@@ -368,6 +371,7 @@ preview, install).
 | Edit scripts failing | CRLF vs LF | Scripts normalise and restore line endings. |
 | `0 debug` refused on Tizen 9 | Retail firmware | A temporary page posting to the PC read the app list and `VIDEOSOURCE`; removed after. |
 | A 4th HDMI that did nothing | The app assumed 4 ports | Only ports the TV lists (sent upstream). |
+| New TV unreachable on SDB (port 26101 closed) | Developer mode not yet active | Developer mode on, Host PC IP checked, full restart. |
 | New TV: `install failed[118]` Check certificate error | The distributor certificate listed only the first TV's DUID | A new distributor certificate with both DUIDs, the same author certificate (profile `FreeMyTV2`). |
 | Logo under YouTube | Logo bottom corner, 736 px tall | Logo above the row, 480 px tall. |
 | Build crash risk | A folder inside `web/backgrounds` | Only `.jpg` files are packed. |
