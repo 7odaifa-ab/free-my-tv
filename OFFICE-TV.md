@@ -75,7 +75,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `222b202` | USB viewer: resume, a progress bar, auto-play when a drive is plugged in, a message for formats the TV can't play. |
 | 2026-11-02 | `963679c` | Inside a photo or video, → is forward even in Arabic (home.js swaps the arrows for RTL). |
 | 2026-11-02 | `b24c809` | A second TV (10.0.0.53); profile `FreeMyTV2` signs for both. |
-| 2026-11-02 | (this commit) | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
+| 2026-11-02 | `d414226` | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
+| 2026-11-02 | (this commit) | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -331,6 +332,31 @@ office_label=جمعية مراكز الأحياء بمنطقة مكة المكر
 which is never pushed; they must never go into `pr/arabic-rtl` or any pull request.
 
 ## 9. Routine tasks
+
+**Adding a Samsung TV (the steps used for the 2nd and 3rd TVs)**
+
+On the TV (someone at the TV does these):
+1. **Fixed network settings:** Settings → General → Network → Network Status → IP Settings. Set the IP to *Enter
+   manually*, with a fixed address on 10.0.0.x that no other device uses (the TVs so far: .51, .52, .53). Set the DNS to
+   *Enter manually*: `94.140.14.14`, and `94.140.15.15` as the second where the TV asks for one (AdGuard DNS, which
+   blocks ads and trackers). A fixed IP keeps every install command and this document right.
+2. **Developer mode:** Apps → type `1 2 3 4 5` on the remote → *Developer mode* On → *Host PC IP* = this computer's IP
+   (`10.0.0.172`). Check the digits didn't come out reversed in the Arabic UI.
+3. **A full restart:** hold the power button until it restarts, or unplug it for 30 s (the remote's power alone is
+   standby). Apps then shows *Developer Mode* at the top.
+
+On the computer:
+1. Check the TV answers on SDB: port 26101 must be open (`python tizen/install.py <IP>` says so if it isn't).
+2. Read its DUID over SDB (`0 getduid`) and add it to the DUID list beside the others.
+3. A new distributor certificate listing **all** the TVs' DUIDs, with the **same author certificate** (copy
+   `author.*` from `~/tizen-sdk-data/keystore/samsung/FreeMyTV` into the new profile's folder first):
+   `node ~/tizen-tools/tizen-agent-skills/tizen-sdk-skills/tizen-cli/bin/tizen-sdk.js certificate-manager --action
+   generate-samsung-distributor --profile-name FreeMyTV<n> --duid-file <list> --privilege Public --prompt-password`,
+   run in the user's own terminal: they type the password and sign in to Samsung in the browser. Then
+   `--action create-samsung-profile --profile-name FreeMyTV<n> --privilege Public`.
+4. `python tizen/build.py --sign FreeMyTV<n>`, then `python tizen/install.py <IP>` for **every** TV. The old ones update
+   in place, and their settings stay.
+5. On the new TV: *Autorun Last App* on. Then add the TV here (section 2, the history, the install commands).
 
 **Build and install**
 
