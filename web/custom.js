@@ -270,7 +270,8 @@ window.FreeMyTVCustom = function (h) {
         for (var i = 0; i < all.length; i++) {
           if (all[i].type === 'EXTERNAL' && all[i].state === 'MOUNTED') {
             window.tizen.filesystem.resolve(all[i].label, function (dir) {
-              usb = {stack: [dir], list: [], at: 0, view: ''};
+              // The screensaver waits while the viewer is open: a slideshow or a film runs with no key pressed
+              usb = {stack: [dir], list: [], at: 0, view: '', awake: setInterval(h.idle, 30000)};
               usbList();
             }, function (e) { toast('USB: ' + e.name); }, 'r');
             return;
@@ -408,6 +409,7 @@ window.FreeMyTVCustom = function (h) {
   function usbBack() {
     if (usb.view) { usbCloseView(); return; }
     if (usb.stack.length > 1) { usb.stack.pop(); usbList(); return; }
+    clearInterval(usb.awake);
     usb = null;
     var u = $('usb');
     if (u) { u.innerHTML = ''; setClass(u, 'on', false); }

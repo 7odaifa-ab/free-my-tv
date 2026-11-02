@@ -1781,7 +1781,7 @@
       nearest: nearest, centerX: centerX, launcher: launcher, tvSettings: tvSettings, openSettings: openSettings,
       showSaver: showSaver, updateFocus: updateFocus, sheetOpen: sheetOpen, saverPhotos: saverPhotos, pickTarget: pickTarget,
       setSaverPick: function (p) { saverPick = p; }, rtl: function () { return rtl; }, st: st, Z: Z,
-      inputs: function () { return inputs; }, apps: function () { return apps; }
+      inputs: function () { return inputs; }, apps: function () { return apps; }, idle: function () { idleAt = Date.now(); }
     };
   }
 
