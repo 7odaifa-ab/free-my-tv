@@ -263,26 +263,53 @@ window.FreeMyTVCustom = function (h) {
     modeTimer = setTimeout(function () { setClass(m, 'on', false); }, 3000);
   }
 
-  function openUsb() {
+  /** Where the viewer was: {dir: path under the drive ('a/b'), name: the file, t: seconds into a video}. */
+  function usbSaved() {
+    try { return JSON.parse(localStorage.getItem('officeUsbAt')) || {}; } catch (e) { return {}; }
+  }
+
+  function usbSave(t) {
+    if (!usb) return;
+    var dirs = [], it = usb.list[usb.at];
+    for (var i = 1; i < usb.stack.length; i++) dirs.push(usb.stack[i].name);
+    try { localStorage.setItem('officeUsbAt', JSON.stringify({dir: dirs.join('/'), name: it ? it.name : '', t: t || 0})); } catch (e) {}
+  }
+
+  function openUsb(auto) {
     var toast = window.FreeMyTV.toast;
+    if (usb) return;
     try {
       window.tizen.filesystem.listStorages(function (all) {
         for (var i = 0; i < all.length; i++) {
           if (all[i].type === 'EXTERNAL' && all[i].state === 'MOUNTED') {
-            window.tizen.filesystem.resolve(all[i].label, function (dir) {
+            window.tizen.filesystem.resolve(all[i].label, function (root) {
               // The screensaver waits while the viewer is open: a slideshow or a film runs with no key pressed
-              usb = {stack: [dir], list: [], at: 0, view: '', awake: setInterval(h.idle, 30000)};
-              usbList();
+              usb = {stack: [root], list: [], at: 0, view: '', awake: setInterval(h.idle, 30000)};
+              var saved = usbSaved(), parts = saved.dir ? saved.dir.split('/') : [];
+              // Back into the folder it was in, as far as it still exists on this drive
+              for (var k = 0; k < parts.length; k++) {
+                try { usb.stack.push(usb.stack[usb.stack.length - 1].resolve(parts[k])); } catch (e) { break; }
+              }
+              usbList(saved.name, auto);
             }, function (e) { toast('USB: ' + e.name); }, 'r');
             return;
           }
         }
-        toast('وصّل فلاش USB بالتلفزيون أولاً');
+        if (!auto) toast('وصّل فلاش USB بالتلفزيون أولاً');
       }, function (e) { toast('USB: ' + e.name); });
     } catch (e) { toast('USB: ' + e.name); }
   }
 
-  function usbList() {
+  // 3: a drive plugged in while this screen shows opens by itself and plays its folder on repeat
+  try {
+    window.tizen.filesystem.addStorageStateChangeListener(function (s) {
+      if (s.type !== 'EXTERNAL') return;
+      if (s.state === 'MOUNTED' && !document.hidden) setTimeout(function () { openUsb(true); }, 1500);
+      else if (s.state !== 'MOUNTED' && usb) { usbCloseView(); usbBack(true); }
+    });
+  } catch (e) {}
+
+  function usbList(focusName, auto) {
     usb.stack[usb.stack.length - 1].listFiles(function (files) {
       var list = [];
       for (var i = 0; i < files.length; i++) {
@@ -294,7 +321,13 @@ window.FreeMyTVCustom = function (h) {
       list.sort(function (x, y) { return (x.kind === 'dir' ? 0 : 1) - (y.kind === 'dir' ? 0 : 1) || (x.name < y.name ? -1 : 1); });
       usb.list = list;
       usb.at = 0;
+      for (var j = 0; focusName && j < list.length; j++) if (list[j].name === focusName) usb.at = j;
       usbDraw();
+      if (auto) {
+        usbMode = 2;   // the folder on repeat
+        var first = list[usb.at] && list[usb.at].kind !== 'dir' ? usb.at : usbNext(usb.at, 1);
+        if (first >= 0) { usb.at = first; usbShow(); }
+      }
     }, function (e) { window.FreeMyTV.toast('USB: ' + e.name); });
   }
 
@@ -337,20 +370,41 @@ window.FreeMyTVCustom = function (h) {
     setClass(v, 'on', true);
     clearTimeout(slideTimer);
     if (it.kind === 'photo') {
+      usbSave(0);
       usb.view = 'photo';
       el('img', '', v).src = it.file.toURI();
       if (MODES[usbMode][0] === 'all') slideTimer = setTimeout(usbAdvance, SLIDE);
     } else {
       usb.view = 'video';
-      var vid = el('video', '', v);
+      var vid = el('video', '', v), saved = usbSaved(), lastSave = 0;
       vid.src = it.file.toURI();
       vid.autoplay = true;
+      // 1: the same file again starts where it stopped (not in its last 10 s)
+      if (saved.name === it.name && saved.t > 5) {
+        vid.addEventListener('loadedmetadata', function () { if (saved.t < vid.duration - 10) { vid.currentTime = saved.t; usbBar(); } });
+      }
+      vid.ontimeupdate = function () {
+        if (Date.now() - lastSave > 5000) { lastSave = Date.now(); usbSave(vid.currentTime); }
+        if (h.hasClass(bar, 'on')) usbBarText();
+      };
       vid.onended = function () {
+        usbSave(0);
         var mode = MODES[usbMode][0];
         if (mode === 'one') { vid.currentTime = 0; vid.play(); }
         else if (mode === 'all') usbAdvance();
         else usbCloseView();
       };
+      // 7: a format the TV can't play says so, then moves on (or closes)
+      vid.onerror = function () {
+        window.FreeMyTV.toast('صيغة هذا الملف غير مدعومة: ' + it.name);
+        setTimeout(function () { if (usb && usb.view === 'video' && usb.list[usb.at] === it) { if (MODES[usbMode][0] === 'all') usbAdvance(); else usbCloseView(); } }, 2500);
+      };
+      vid.onplay = vid.onpause = usbBar;
+      var bar = el('div', 'u-bar', v);
+      el('div', 'u-state', bar);
+      el('div', 'u-fill', el('div', 'u-track', bar));
+      el('div', 'u-time', bar);
+      usbBar();
     }
     var cap = el('div', 'u-cap', v, it.name);
     setTimeout(function () { setClass(cap, 'gone', true); }, 3000);   // the name, then the picture alone
@@ -358,11 +412,36 @@ window.FreeMyTVCustom = function (h) {
     showMode();
   }
 
+  /** 2: the progress bar, shown for 3 s after a key, a pause or a play (always while paused). */
+  var barTimer = 0;
+  function mmss(t) {
+    t = Math.max(0, Math.floor(t || 0));
+    var h2 = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, sec = t % 60;
+    return (h2 ? h2 + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+  function usbBarText() {
+    var v = $('usbview'), vid = v && v.querySelector('video'), bar = v && v.querySelector('.u-bar');
+    if (!vid || !bar) return;
+    var d = vid.duration || 0;
+    bar.querySelector('.u-fill').style.width = (d ? Math.min(100, vid.currentTime / d * 100) : 0) + '%';
+    bar.querySelector('.u-time').textContent = mmss(vid.currentTime) + ' / ' + mmss(d) + (d ? '   (−' + mmss(d - vid.currentTime) + ')' : '');
+    bar.querySelector('.u-state').textContent = vid.paused ? '❚❚' : '▶';
+  }
+  function usbBar() {
+    var v = $('usbview'), vid = v && v.querySelector('video'), bar = v && v.querySelector('.u-bar');
+    if (!bar) return;
+    usbBarText();
+    setClass(bar, 'on', true);
+    clearTimeout(barTimer);
+    barTimer = setTimeout(function () { if (!vid.paused) setClass(bar, 'on', false); }, 3000);
+  }
+
   function usbCloseView() {
     clearTimeout(slideTimer);
     var v = $('usbview');
     if (v) {
       var vid = v.querySelector('video');
+      if (vid && usb) usbSave(vid.ended ? 0 : vid.currentTime);
       if (vid) { vid.pause(); vid.removeAttribute('src'); vid.load(); }
       v.innerHTML = '';
       setClass(v, 'on', false);
@@ -382,6 +461,7 @@ window.FreeMyTVCustom = function (h) {
     if (usb.view === 'video') {
       vid = $('usbview').querySelector('video');
       if (vid && dx) vid.currentTime = Math.max(0, vid.currentTime + dx * 10);   // ← → skip 10 s
+      usbBar();
       return;
     }
     if (!n) return;
@@ -406,9 +486,9 @@ window.FreeMyTVCustom = function (h) {
     if (it.kind === 'dir') { usb.stack.push(it.file); usbList(); } else usbShow();
   }
 
-  function usbBack() {
-    if (usb.view) { usbCloseView(); return; }
-    if (usb.stack.length > 1) { usb.stack.pop(); usbList(); return; }
+  function usbBack(all) {
+    if (usb.view && !all) { usbCloseView(); return; }
+    if (usb.stack.length > 1 && !all) { var left = usb.stack.pop().name; usbList(left); return; }
     clearInterval(usb.awake);
     usb = null;
     var u = $('usb');

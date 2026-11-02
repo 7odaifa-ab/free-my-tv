@@ -69,7 +69,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-01 | `8178d20` | This document: the rotation timing, the design iterations (6.9), the image processing in detail. |
 | 2026-11-02 | `9fa007a` | Screen Mirroring opens a how-to card; USB opens our own viewer of the drive, with repeat modes (6.10). |
 | 2026-11-02 | `d79ac57` | The viewer's file name fades after 3 s. |
-| 2026-11-02 | (this commit) | No screensaver while the USB viewer is open (`h.idle`, a one-line hook in home.js). |
+| 2026-11-02 | `a2f542b` | No screensaver while the USB viewer is open (`h.idle`, a one-line hook in home.js). |
+| 2026-11-02 | (this commit) | USB viewer: resume, a progress bar, auto-play when a drive is plugged in, a message for formats the TV can't play. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -238,6 +239,15 @@ Back closes it. The card's classes are prefixed `g-`: plain names (`title`, `ste
 - **Repeat modes** (▲ ▼ inside the viewer, shown for 3 s, remembered in `localStorage` `officeUsbMode`): *play once
   and close*, *repeat the file*, or *play the folder on repeat*. That last one goes through the folder's photos and
   videos, round to the start; photos stay 8 s each, as a slideshow. It suits a screen left playing in the office.
+- **Resume** (`localStorage` `officeUsbAt`: folder path, file name, seconds): the viewer opens in the last folder,
+  focused on the last file. A video opened again starts where it stopped (saved every 5 s and on close), unless that
+  was its last 10 s.
+- **Progress bar:** the elapsed and total time, the time left, and ▶ or ❚❚. It shows for 3 s after a key, a pause or a
+  play, and stays up while paused. The file's name moved to the top so the two don't meet.
+- **Plug and play** (`filesystem.addStorageStateChangeListener`): a drive plugged in while Free My TV is in front opens
+  the viewer by itself (1.5 s later) and plays its folder on repeat. Pulling the drive out closes the viewer.
+- **Unsupported formats:** the video's `error` shows «صيغة هذا الملف غير مدعومة» with the name, then moves to the next
+  file after 2.5 s (folder mode) or closes, never a black screen.
 - **Privileges:** `filesystem.read`, `mediastorage`, `externalstorage` and `network.get`. They are added to
   `config.xml` at build time by `custom_build.manifest()`, only for `home_layout=office`, so main's `tizen/config.xml`
   is unchanged. `tizen/build.py` got a one-line hook for it.

@@ -267,3 +267,10 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #usbview .u-mode.on { opacity: 1; }
 .office #usbview .u-cap { -webkit-transition: opacity 0.6s; transition: opacity 0.6s; }
 .office #usbview .u-cap.gone { opacity: 0; }
+.office #usbview .u-bar { position: absolute; left: 80px; right: 80px; bottom: 60px; height: 64px; padding: 0 28px; border-radius: 32px; background: rgba(12, 35, 63, 0.85); color: #F6EFE0; direction: ltr; opacity: 0; -webkit-transition: opacity 0.3s; transition: opacity 0.3s; }
+.office #usbview .u-bar.on { opacity: 1; }
+.office #usbview .u-state { position: absolute; left: 28px; top: 0; line-height: 64px; font-size: 28px; color: #DCB86F; }
+.office #usbview .u-track { position: absolute; left: 90px; right: 420px; top: 28px; height: 8px; border-radius: 4px; background: rgba(246, 239, 224, 0.25); overflow: hidden; }
+.office #usbview .u-fill { height: 8px; width: 0; background: #DCB86F; }
+.office #usbview .u-time { position: absolute; right: 28px; top: 0; line-height: 64px; font-size: 26px; white-space: nowrap; }
+.office #usbview .u-cap { top: 40px; bottom: auto; }
