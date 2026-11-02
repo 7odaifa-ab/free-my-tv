@@ -452,6 +452,9 @@ window.FreeMyTVCustom = function (h) {
 
   function usbMove(dx, dy) {
     var n = usb.list.length, vid;
+    // home.js swaps ← → for Arabic (the grid runs right to left), but a photo or a video runs left to right like its
+    // progress bar: → is forward there, whatever the language.
+    if (usb.view && h.rtl()) dx = -dx;
     if (usb.view && dy) {
       usbMode = (usbMode + (dy > 0 ? 1 : MODES.length - 1)) % MODES.length;
       try { localStorage.setItem('officeUsbMode', usbMode); } catch (e) {}

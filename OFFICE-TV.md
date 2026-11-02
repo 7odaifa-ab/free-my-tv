@@ -70,7 +70,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `9fa007a` | Screen Mirroring opens a how-to card; USB opens our own viewer of the drive, with repeat modes (6.10). |
 | 2026-11-02 | `d79ac57` | The viewer's file name fades after 3 s. |
 | 2026-11-02 | `a2f542b` | No screensaver while the USB viewer is open (`h.idle`, a one-line hook in home.js). |
-| 2026-11-02 | (this commit) | USB viewer: resume, a progress bar, auto-play when a drive is plugged in, a message for formats the TV can't play. |
+| 2026-11-02 | `222b202` | USB viewer: resume, a progress bar, auto-play when a drive is plugged in, a message for formats the TV can't play. |
+| 2026-11-02 | (this commit) | Inside a photo or video, → is forward even in Arabic (home.js swaps the arrows for RTL). |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -234,7 +235,7 @@ Back closes it. The card's classes are prefixed `g-`: plain names (`title`, `ste
   6 columns (folders first, then by name; hidden files and other types left out). Thumbnails load only for the rows
   near the focus, since a camera's card can hold hundreds of photos.
 - OK opens a folder, a photo (full screen, `contain`) or a video (HTML5 `<video>`). In a photo, ← → move to the
-  previous or next file. The file's name shows in the corner for 3 s, then fades. While the viewer is open the screensaver waits (`h.idle` every 30 s): a slideshow or a film runs with no key pressed. In a video, OK pauses or plays, and ← → skip 10 s. Back closes the file, then goes up a
+  previous or next file. The file's name shows in the corner for 3 s, then fades. While the viewer is open the screensaver waits (`h.idle` every 30 s): a slideshow or a film runs with no key pressed. In a video, OK pauses or plays, and ← → skip 10 s. Inside a photo or a video, → is always forward, as on the progress bar: home.js swaps ← → in Arabic for the grid, and the viewer swaps them back there. Back closes the file, then goes up a
   folder, then leaves.
 - **Repeat modes** (▲ ▼ inside the viewer, shown for 3 s, remembered in `localStorage` `officeUsbMode`): *play once
   and close*, *repeat the file*, or *play the folder on repeat*. That last one goes through the folder's photos and
