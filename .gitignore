@@ -18,13 +18,7 @@ __pycache__/
 .DS_Store
 tools/.i18n-cache.json
 
-# This fork's brand: fonts, logo and icon (tools/custom_build.py uses them when they are there)
-app/assets/fonts/thmanyah/
-app/assets/App-Icon/
-app/assets/logo.svg
-app/assets/logo.png
-app/assets/logo-corner.png
+# The office photos' originals (218 MB: too big for git; the processed copies in app/assets/backgrounds.local/ are committed)
+# and a zip that repeats app/assets/App-Icon/
 app/assets/app icon.zip
-tizen/icon.local.png
-app/assets/backgrounds.local/
 web/backgrounds/AlAhyaa/

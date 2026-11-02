@@ -20,8 +20,9 @@ from main's files, so main's updates merge with little or nothing to fix.
 | `FORK.md` | This guide. |
 | `OFFICE-TV.md` | The full record: every change, why, what it gives, and the plan for what comes next. |
 
-Not in git (the person's brand, `.gitignore`): `app/assets/fonts/thmanyah/`, `app/assets/logo-corner.png`,
-`app/assets/backgrounds.local/`, `web/backgrounds/AlAhyaa/`, `app/assets/credit.local.png` (Zakhm's credit badge, shown under Home Settings), `tizen/icon.local.png` (a copy of `app/res/drawable-nodpi/icon.png`), and `config.properties`.
+The brand (fonts, logos, icon, processed photos, Zakhm's credit) is committed on `office-tv`, which stays local: the fork
+on GitHub is public. Not in git: `config.properties`, the photos' originals in `web/backgrounds/AlAhyaa/` (218 MB),
+and `app/assets/app icon.zip`.
 
 ## Where main's files call ours (the only lines to check after a merge)
 

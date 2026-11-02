@@ -77,7 +77,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `b24c809` | A second TV (10.0.0.53); profile `FreeMyTV2` signs for both. |
 | 2026-11-02 | `d414226` | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
 | 2026-11-02 | `71853f2` | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
-| 2026-11-02 | (this commit) | Back stays on the home screen (held 2 s, it leaves); the bottom key is the TV's home screen; the top pill opens Home Settings; Zakhm's credit under Home Settings. |
+| 2026-11-02 | `5221e88` | Back stays on the home screen (held 2 s, it leaves); the bottom key is the TV's home screen; the top pill opens Home Settings; Zakhm's credit under Home Settings. |
+| 2026-11-02 | `96d2f1c`, (this commit) | The brand committed on office-tv: fonts, logos, icon, processed photos, Zakhm's files (section 8). |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -338,19 +339,26 @@ office_label=جمعية مراكز الأحياء بمنطقة مكة المكر
 
 `home_layout`, `prayer_times`, `hijri_offset` and `office_label` are ours (`tools/custom_build.py`); the rest are main's.
 
-## 8. Private files (never in git, never in a `--generic` build)
+## 8. Brand files, and what stays out of git
 
-| File | Why private |
+Since 2026-11-02 the brand is committed on `office-tv` (the user's call: it's our own fork). The branch is never pushed:
+the fork on GitHub (`7odaifa-ab/free-my-tv`) is **public**, and a push would publish all of this. None of it goes
+into `pr/arabic-rtl`, any pull request, or a `--generic` build.
+
+| Committed on `office-tv` | What it is |
 |---|---|
-| `config.properties` | The project's rule: settings and any key stay local. |
-| `app/assets/fonts/thmanyah/*.woff2` | Thmanyah's licence doesn't allow republishing. |
-| `app/assets/logo-corner.png`, `app/assets/app icon.zip` | The organisation's brand. |
-| `tizen/icon.local.png` | Copy of the office icon for the Samsung package. |
-| `web/backgrounds/AlAhyaa/`, `app/assets/backgrounds.local/` | The organisation's photos. |
-| `~/tizen-sdk-data` (certificate, profile) | Signing keys; passwords are typed only by the owner, never shared. |
+| `app/assets/fonts/thmanyah/*.woff2` | Thmanyah fonts (their licence doesn't allow republishing: another reason never to push) |
+| `app/assets/logo.svg`, `logo.png`, `logo-corner.png`, `App-Icon/` | The association's logo and app icon |
+| `tizen/icon.local.png`, `app/res/drawable-nodpi/icon.png`, `banner.png` | The office's icon and banner |
+| `app/assets/backgrounds.local/` | The office photos, processed (2.2 MB) |
+| `app/assets/Zakhm/`, `app/assets/credit.local.png` | Zakhm's logos and the «طوّر بواسطة» credit badge |
 
-`app/res/drawable-nodpi/icon.png` and `banner.png` (the office's icon and banner) are committed on `office-tv` only,
-which is never pushed; they must never go into `pr/arabic-rtl` or any pull request.
+| Still out of git | Why |
+|---|---|
+| `config.properties` | The project's rule: this computer's settings, and any key added later. |
+| `web/backgrounds/AlAhyaa/` | The photos' originals, 218 MB: too big for git. Keep a copy elsewhere; `tools/office_photos.py` remakes the processed set from them. |
+| `app/assets/app icon.zip` | Repeats `App-Icon/`. |
+| `~/tizen-sdk-data` (certificates, profiles) | Signing keys; passwords are typed only by the owner, never shared. |
 
 ## 9. Routine tasks
 
