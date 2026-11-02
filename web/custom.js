@@ -351,7 +351,8 @@ window.FreeMyTVCustom = function (h) {
         else usbCloseView();
       };
     }
-    el('div', 'u-cap', v, it.name);
+    var cap = el('div', 'u-cap', v, it.name);
+    setTimeout(function () { setClass(cap, 'gone', true); }, 3000);   // the name, then the picture alone
     el('div', 'u-mode', v);
     showMode();
   }

@@ -265,3 +265,5 @@ body.office { font-family: 'Thmanyah', 'Inter', 'Noto Sans Arabic', 'SamsungOne'
 .office #usbview .u-cap { position: absolute; bottom: 30px; left: 40px; font-size: 24px; color: rgba(255, 255, 255, 0.7); text-shadow: 0 2px 8px #000; }
 .office #usbview .u-mode { position: absolute; top: 40px; left: 50%; -webkit-transform: translate(-50%, 0); transform: translate(-50%, 0); padding: 16px 32px; border-radius: 32px; background: rgba(12, 35, 63, 0.85); color: #F6EFE0; font-size: 30px; font-weight: 700; white-space: nowrap; opacity: 0; -webkit-transition: opacity 0.3s; transition: opacity 0.3s; }
 .office #usbview .u-mode.on { opacity: 1; }
+.office #usbview .u-cap { -webkit-transition: opacity 0.6s; transition: opacity 0.6s; }
+.office #usbview .u-cap.gone { opacity: 0; }
