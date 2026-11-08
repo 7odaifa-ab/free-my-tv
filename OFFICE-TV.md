@@ -30,9 +30,10 @@ What it shows:
 | TV IP | 10.0.0.52 |
 | Second TV | Samsung UA55CU7000UXSA, 2023, Tizen 9.0, 55", at 10.0.0.53 (added 2026-11-02) |
 | Third TV | Samsung UA98DU9000UXSA, 2024, 98", at 10.0.0.51 (added 2026-11-02) |
+| Fourth TV | Samsung UA75CU7000UXSA, 2023, 75", at 10.0.0.54 (added 2026-11-08) |
 | City | Jeddah (21.4858, 39.1925), time zone Asia/Riyadh |
 | Computer | Windows 11, IP 10.0.0.172 (was 10.0.0.190; the TV's *Host PC IP* must match the current one) |
-| Signing | Samsung certificate profile `FreeMyTV3`: the same author certificate as the first profile `FreeMyTV`, and a distributor certificate listing all three TVs' DUIDs (`FreeMyTV2` covered the first two). Made with tizen-agent-skills' certificate manager (`generate-samsung-distributor --duid-file`, `create-samsung-profile`); the password was typed by the user, and the Samsung sign-in happened in the browser. Keeping the author certificate let the first TV take the update without uninstalling. A third TV needs a new distributor certificate with all the DUIDs (`0 getduid` over SDB reads each one). |
+| Signing | Samsung certificate profile `FreeMyTV4`: the same author certificate as the first profile `FreeMyTV`, and a distributor certificate listing all four TVs' DUIDs (`FreeMyTV2` and `FreeMyTV3` covered fewer). Made with tizen-agent-skills' certificate manager (`generate-samsung-distributor --duid-file`, `create-samsung-profile`); the password was typed by the user, and the Samsung sign-in happened in the browser. Keeping the author certificate let the first TV take the update without uninstalling. A third TV needs a new distributor certificate with all the DUIDs (`0 getduid` over SDB reads each one). |
 | Tizen tools | `~/tizen-sdk` (CLI in `~/tizen-sdk/tools/ide/bin`) |
 
 Developer mode on the TV: *Apps* → `1 2 3 4 5` (on a remote without numbers, the on-screen number pad) → Developer mode
@@ -78,7 +79,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `d414226` | A third TV (10.0.0.51, 98"); profile `FreeMyTV3` signs for all three. |
 | 2026-11-02 | `71853f2` | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
 | 2026-11-02 | `5221e88` | Back stays on the home screen (held 2 s, it leaves); the bottom key is the TV's home screen; the top pill opens Home Settings; Zakhm's credit under Home Settings. |
-| 2026-11-02 | `96d2f1c`, (this commit) | The brand committed on office-tv: fonts, logos, icon, processed photos, Zakhm's files (section 8). |
+| 2026-11-02 | `96d2f1c`, `6863c05` | The brand committed on office-tv: fonts, logos, icon, processed photos, Zakhm's files (section 8). |
+| 2026-11-08 | (this commit) | A fourth TV (10.0.0.54, 75"); profile `FreeMyTV4` signs for all four. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -366,7 +368,7 @@ into `pr/arabic-rtl`, any pull request, or a `--generic` build.
 
 On the TV (someone at the TV does these):
 1. **Fixed network settings:** Settings → General → Network → Network Status → IP Settings. Set the IP to *Enter
-   manually*, with a fixed address on 10.0.0.x that no other device uses (the TVs so far: .51, .52, .53). Set the DNS to
+   manually*, with a fixed address on 10.0.0.x that no other device uses (the TVs so far: .51, .52, .53, .54). Set the DNS to
    *Enter manually*: `94.140.14.14`, and `94.140.15.15` as the second where the TV asks for one (AdGuard DNS, which
    blocks ads and trackers). A fixed IP keeps every install command and this document right.
 2. **Developer mode:** Apps → type `1 2 3 4 5` on the remote → *Developer mode* On → *Host PC IP* = this computer's IP
@@ -390,10 +392,11 @@ On the computer:
 **Build and install**
 
 ```bash
-python tizen/build.py --sign FreeMyTV3
+python tizen/build.py --sign FreeMyTV4
 python tizen/install.py 10.0.0.51
 python tizen/install.py 10.0.0.52
 python tizen/install.py 10.0.0.53
+python tizen/install.py 10.0.0.54
 ```
 
 If SDB can't connect: kill Samsung's `sdb.exe` if it is running, and check the TV's Host PC IP is this computer's
