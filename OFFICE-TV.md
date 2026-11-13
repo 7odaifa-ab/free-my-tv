@@ -80,7 +80,8 @@ The app's version is main's (`1.3.0` at the time of writing); our builds are ide
 | 2026-11-02 | `71853f2` | How to add a Samsung TV, step by step: fixed IP, AdGuard DNS, developer mode, the certificate. |
 | 2026-11-02 | `5221e88` | Back stays on the home screen (held 2 s, it leaves); the bottom key is the TV's home screen; the top pill opens Home Settings; Zakhm's credit under Home Settings. |
 | 2026-11-02 | `96d2f1c`, `6863c05` | The brand committed on office-tv: fonts, logos, icon, processed photos, Zakhm's files (section 8). |
-| 2026-11-08 | (this commit) | A fourth TV (10.0.0.54, 75"); profile `FreeMyTV4` signs for all four. |
+| 2026-11-08 | `01aa3e0` | A fourth TV (10.0.0.54, 75"); profile `FreeMyTV4` signs for all four. |
+| 2026-11-13 | (this commit) | Main merged (v1.5.0, with PR #415 in it and the maintainer's Arabic fixes). Our clock now takes ص/م from the 12-hour pattern (main removed `I18N.period`); UV is «UV {n}» in Arabic. Not yet installed: the computer was off the office network. |
 
 ## 4. Upstream contribution (PR #415)
 
@@ -431,6 +432,7 @@ preview, install).
 | A 4th HDMI that did nothing | The app assumed 4 ports | Only ports the TV lists (sent upstream). |
 | New TV unreachable on SDB (port 26101 closed) | Developer mode not yet active | Developer mode on, Host PC IP checked, full restart. |
 | New TV: `install failed[118]` Check certificate error | The distributor certificate listed only the first TV's DUID | A new distributor certificate with both DUIDs, the same author certificate (profile `FreeMyTV2`). |
+| After merging main (v1.5.0) the home screen stopped drawing | main removed `I18N.period`, which our clock used | ص/م taken from `formatDate('format|h:mm a')` minus the time (also follows main's new 12/24-hour setting). |
 | Logo under YouTube | Logo bottom corner, 736 px tall | Logo above the row, 480 px tall. |
 | Build crash risk | A folder inside `web/backgrounds` | Only `.jpg` files are packed. |
 | YouTube letters invisible in the light look | White logo on a white key | That key is navy in the light look. |

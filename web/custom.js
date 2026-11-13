@@ -71,7 +71,8 @@ window.FreeMyTVCustom = function (h) {
    */
   function clockDigits(node, at) {
     var time = formatDate('format|h:mm', at), rtl = h.rtl();
-    var ap = /a/.test(tr('format|h:mm a').replace(/'[^']*'/g, '')) ? I18N.period(at) : '';
+    // AM/PM (ص/م) is what the 12-hour pattern adds to the time; none when the clock is 24-hour (Home Settings)
+    var full = formatDate('format|h:mm a', at), ap = full.indexOf(time) >= 0 ? full.replace(time, '').replace(/^\s+|\s+$/g, '') : '';
     if (node.getAttribute('data-t') === time + ap + rtl) return;
     node.setAttribute('data-t', time + ap + rtl);
     node.innerHTML = '';
